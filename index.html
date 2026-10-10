@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Narancs Signage</title>
+<meta name="description" content="A complete, self-hosted digital signage system: admin panel, ARM-ready player and one-command installers for Ubuntu Server.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top"><img src="assets/favicon.svg" alt="" width="30" height="30"> Narancs Signage</a>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#screens">Screenshots</a>
+    <a href="#install">Install</a>
+    <a class="btn btn-sm" href="https://github.com/mzzg-bazsi/narancs-signage">GitHub</a>
+  </nav>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="hero-text">
+    <p class="kicker">Self-hosted digital signage</p>
+    <h1>Your screens.<br>Your server.<br><span>No subscription.</span></h1>
+    <p class="lead">Narancs Signage is a complete signage system: an admin panel, a player that runs on any ARM or x86 box, and one-command installers for Ubuntu Server. Slideshows, calendars, forms, touch menus — managed from one place, running even when the network is down.</p>
+    <div class="cta">
+      <a class="btn" href="#install">Install in two commands</a>
+      <a class="btn btn-ghost" href="https://github.com/mzzg-bazsi/narancs-signage">View on GitHub</a>
+    </div>
+    <ul class="stats">
+      <li><b>14</b> content types</li>
+      <li><b>0</b> dependencies</li>
+      <li><b>1</b> command per screen</li>
+      <li><b>ARM</b> + x86</li>
+    </ul>
+  </div>
+
+  <!-- Interaktív bemutató: öt lépés, alatta a kijelzők állapota -->
+  <div class="stage" id="demo">
+    <div class="win">
+      <div class="bar">
+        <i class="tl r"></i><i class="tl y"></i><i class="tl g"></i>
+        <b>Narancs Signage</b>
+        <span class="hint"><i></i>Click through the five steps</span>
+      </div>
+      <div class="steps" role="tablist" aria-label="Demo steps">
+        <button role="tab" class="step" aria-selected="true"><em>1</em>Install</button>
+        <button role="tab" class="step"><em>2</em>Pair</button>
+        <button role="tab" class="step"><em>3</em>Create</button>
+        <button role="tab" class="step"><em>4</em>Schedule</button>
+        <button role="tab" class="step"><em>5</em>Play</button>
+      </div>
+
+      <div class="panel">
+        <!-- 1. Telepítés -->
+        <section class="pane active" role="tabpanel">
+          <h3>Install the player</h3>
+          <p class="sub">One command on any Ubuntu Server or Raspberry Pi. No desktop, no window manager — just a locked-down Chromium kiosk.</p>
+          <code class="cmd">curl -fsSL http://192.168.1.10:8080/install-player.sh | sudo bash</code>
+          <div class="ticks" id="ticks" aria-hidden="true"></div>
+          <p class="status" id="instStatus">Waiting…</p>
+          <div class="btns"><button class="mini" id="instRun">Run again</button><button class="mini primary" data-go="1">Next: pair →</button></div>
+        </section>
+
+        <!-- 2. Párosítás -->
+        <section class="pane" role="tabpanel">
+          <div class="split">
+            <div class="tv"><div class="tv-screen pairing"><img src="assets/logo.svg" alt=""><small>Pairing code</small><strong id="pairCode">482 913</strong></div></div>
+            <div class="form">
+              <h3>Pair the screen</h3>
+              <p class="sub">After the reboot the display shows a 6-digit code. Type it into the admin panel.</p>
+              <div class="digits" id="digits"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <label class="field"><span>Name</span><b>Lobby</b></label>
+              <button class="mini primary" id="pairBtn">Enter code &amp; pair</button>
+              <p class="status ok" id="pairOk" hidden>✓ “Lobby” is online — 1920×1080, Chromium 140</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Tartalom -->
+        <section class="pane" role="tabpanel">
+          <div class="split">
+            <div class="types" id="types">
+              <button data-img="player-welcome" class="on">📝 Announcement</button>
+              <button data-img="player-clock">🕒 Clock &amp; weather</button>
+              <button data-img="player-calendar">📅 Calendar</button>
+              <button data-img="player-cards">🃏 Cards</button>
+              <button data-img="player-menu">👆 Touch menu</button>
+              <button data-img="player-form">📋 Form</button>
+            </div>
+            <div class="form">
+              <div class="tv"><div class="tv-screen"><img id="typeImg" src="assets/shots/player-welcome.png" alt="Content preview"></div></div>
+              <p class="sub center">Live preview, coloured by your branding. 14 types in total.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. Ütemezés -->
+        <section class="pane" role="tabpanel">
+          <h3>Schedule the day</h3>
+          <p class="sub">Different playlists by time, weekday and date range. Drag the needle.</p>
+          <div class="timeline" id="timeline">
+            <div class="blk off" style="left:0;width:6.25%">off</div>
+            <div class="blk a" style="left:6.25%;width:25%">Breakfast menu</div>
+            <div class="blk b" style="left:31.25%;width:18.75%">Lunch specials</div>
+            <div class="blk c" style="left:50%;width:37.5%">Events &amp; calendar</div>
+            <div class="blk off" style="left:87.5%;width:12.5%">screen off</div>
+            <div class="needle" id="needle"></div>
+          </div>
+          <div class="hours"><span>06</span><span>10</span><span>14</span><span>18</span><span>22</span></div>
+          <p class="status" id="nowPlaying"></p>
+        </section>
+
+        <!-- 5. Lejátszás -->
+        <section class="pane" role="tabpanel">
+          <div class="split">
+            <div class="tv big"><div class="tv-screen" id="player">
+              <img src="assets/shots/player-welcome.png" alt="" class="on">
+              <img src="assets/shots/player-clock.png" alt="">
+              <img src="assets/shots/player-calendar.png" alt="">
+              <img src="assets/shots/player-cards.png" alt="">
+              <div class="ticker"><span>Welcome to the lobby · Today 14:00 team meeting in room 2 · Lunch: goulash soup · Wi-Fi: Guest / scan the QR code ·</span></div>
+              <div class="alert" id="alert" hidden><b>🔥 FIRE ALARM</b><span>Leave the building by the nearest exit</span></div>
+            </div></div>
+            <div class="form">
+              <h3>It plays</h3>
+              <p class="sub">Fades, slides, Ken Burns. Cached offline. Remote reload, restart and emergency alerts from the admin.</p>
+              <button class="mini" id="nextSlide">Next slide</button>
+              <button class="mini danger" id="alertBtn">Send emergency alert</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="wall">
+      <div class="dots" id="dots" aria-hidden="true"></div>
+      <div class="legend">
+        <span><i class="s-off"></i>Offline</span><span><i class="s-pend"></i>Pending</span><span><i class="s-pair"></i>Paired</span>
+        <span><i class="s-play"></i>Playing</span><span><i class="s-touch"></i>Touched</span><span><i class="s-alert"></i>Alert</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="section">
+  <h2>Everything a screen needs</h2>
+  <p class="section-lead">Fourteen content types, all editable in the browser with a live preview.</p>
+  <div class="grid types-grid">
+    <article><span>🖼️</span><h3>Image slideshow</h3><p>Fade, slide, Ken Burns, captions and a blurred background.</p></article>
+    <article><span>🎬</span><h3>Video</h3><p>Play to the end or for a set time, with or without sound.</p></article>
+    <article><span>📝</span><h3>Announcement</h3><p>Title, text, background image or video, gradients, logo.</p></article>
+    <article><span>🃏</span><h3>Cards</h3><p>Tiles with icons and badges; a tap opens other content.</p></article>
+    <article><span>👆</span><h3>Interactive menu</h3><p>Touch buttons, back/home, auto-return after inactivity.</p></article>
+    <article><span>📋</span><h3>Form</h3><p>Surveys and sign-ups with a virtual keyboard and CSV export.</p></article>
+    <article><span>📅</span><h3>Calendar</h3><p>List, week, month; your events plus Google/Outlook iCal.</p></article>
+    <article><span>🕒</span><h3>Clock &amp; weather</h3><p>Digital or analogue, 5-day forecast, no API key needed.</p></article>
+    <article><span>📰</span><h3>News feed</h3><p>Any RSS or Atom source, with images.</p></article>
+    <article><span>⏳</span><h3>Countdown</h3><p>Time left until an event.</p></article>
+    <article><span>🔳</span><h3>QR code</h3><p>Built-in generator for links and Wi-Fi login.</p></article>
+    <article><span>🌐</span><h3>Website</h3><p>Embed a page or dashboard, with zoom and timed reload.</p></article>
+    <article><span>📄</span><h3>PDF</h3><p>Show a document.</p></article>
+    <article><span>🧩</span><h3>Custom HTML</h3><p>Your own HTML/CSS/JS in an isolated frame.</p></article>
+  </div>
+
+  <div class="grid perks">
+    <article><h3>Scheduling</h3><p>Playlists per screen by day, time window and date range. Scheduled screen off turns the monitor off too (DPMS).</p></article>
+    <article><h3>Remote control</h3><p>Identify, previous/next, reload, clear cache, restart the player or reboot the device — from the admin.</p></article>
+    <article><h3>Branding</h3><p>10 built-in themes, custom colours, fonts, logo watermark and header bar. A different theme per screen.</p></article>
+    <article><h3>Emergency alerts</h3><p>An instant full-screen message on all or selected screens, with templates and expiry.</p></article>
+    <article><h3>Works offline</h3><p>The player caches its configuration and media and keeps running if the server goes down.</p></article>
+    <article><h3>Polished kiosk</h3><p>Boot splash with a progress bar instead of console text, touch or mouse mode per screen, no translate pop-ups.</p></article>
+  </div>
+</section>
+
+<section id="screens" class="section">
+  <h2>See it</h2>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="admin">Admin panel</button>
+    <button role="tab" data-tab="player">On the display</button>
+  </div>
+  <div class="gallery" data-panel="admin">
+    <figure><a href="assets/shots/admin-dashboard.png"><img loading="lazy" src="assets/shots/admin-dashboard.png" alt="Dashboard"></a><figcaption>Dashboard</figcaption></figure>
+    <figure><a href="assets/shots/admin-screens.png"><img loading="lazy" src="assets/shots/admin-screens.png" alt="Screens"></a><figcaption>Screens</figcaption></figure>
+    <figure><a href="assets/shots/admin-playlist.png"><img loading="lazy" src="assets/shots/admin-playlist.png" alt="Playlist editor"></a><figcaption>Playlist editor with live preview</figcaption></figure>
+    <figure><a href="assets/shots/admin-content-editor.png"><img loading="lazy" src="assets/shots/admin-content-editor.png" alt="Content editor"></a><figcaption>Content editor</figcaption></figure>
+    <figure><a href="assets/shots/admin-branding.png"><img loading="lazy" src="assets/shots/admin-branding.png" alt="Branding"></a><figcaption>Branding: 10 themes</figcaption></figure>
+    <figure><a href="assets/shots/admin-alerts.png"><img loading="lazy" src="assets/shots/admin-alerts.png" alt="Emergency alerts"></a><figcaption>Emergency alerts</figcaption></figure>
+  </div>
+  <div class="gallery" data-panel="player" hidden>
+    <figure><a href="assets/shots/player-welcome.png"><img loading="lazy" src="assets/shots/player-welcome.png" alt="Announcement"></a><figcaption>Announcement</figcaption></figure>
+    <figure><a href="assets/shots/player-clock.png"><img loading="lazy" src="assets/shots/player-clock.png" alt="Clock and weather"></a><figcaption>Clock &amp; weather</figcaption></figure>
+    <figure><a href="assets/shots/player-calendar.png"><img loading="lazy" src="assets/shots/player-calendar.png" alt="Calendar"></a><figcaption>Calendar</figcaption></figure>
+    <figure><a href="assets/shots/player-cards.png"><img loading="lazy" src="assets/shots/player-cards.png" alt="Cards"></a><figcaption>Cards</figcaption></figure>
+    <figure><a href="assets/shots/player-menu.png"><img loading="lazy" src="assets/shots/player-menu.png" alt="Interactive menu"></a><figcaption>Interactive menu</figcaption></figure>
+    <figure><a href="assets/shots/player-form.png"><img loading="lazy" src="assets/shots/player-form.png" alt="Touch-screen form"></a><figcaption>Touch-screen form</figcaption></figure>
+  </div>
+</section>
+
+<section id="install" class="section">
+  <h2>Up and running in minutes</h2>
+  <div class="grid install">
+    <article>
+      <h3><em>1</em> Server <small>Ubuntu 22.04 / 24.04, amd64 or arm64</small></h3>
+      <pre><code>git clone https://github.com/mzzg-bazsi/narancs-signage.git
+cd narancs-signage
+sudo ./install/install-server.sh</code></pre>
+      <button class="copy">Copy</button>
+      <p>Installs Node.js, a systemd service and daily backups. Open <code>http://SERVER-IP:8080/admin/</code> and create your account.</p>
+    </article>
+    <article>
+      <h3><em>2</em> Each display <small>Ubuntu Server or Raspberry Pi OS Lite</small></h3>
+      <pre><code>curl -fsSL http://SERVER-IP:8080/install-player.sh | sudo bash</code></pre>
+      <button class="copy">Copy</button>
+      <p>Reboot, then enter the 6-digit code shown on the screen under <b>Screens → New screen</b>. No install? Open <code>/player/</code> in any browser.</p>
+    </article>
+  </div>
+</section>
+</main>
+
+<footer>
+  <img src="assets/favicon.svg" alt="" width="24" height="24">
+  <span>© 2026 Balázs Mazzag · <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE">Narancs Signage License</a> · free to use, modify and share</span>
+</footer>
+
+<script src="demo.js"></script>
+</body>
+</html>
