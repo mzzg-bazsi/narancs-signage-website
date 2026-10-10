@@ -28,6 +28,7 @@
     "How does it compare to Yodeck, Screenly, ScreenCloud and Xibo? →": "Hogyan viszonyul a Yodeckhez, a Screenlyhez, a ScreenCloudhoz és a Xibóhoz? →",
     "✓ = available · – = not stated on the vendor's public pricing or feature pages. Prices per screen per month, billed annually, from the vendors' public pages, checked on 10 October 2026. <sup>1</sup> Xibo: cloud plans on request; the self-hosted CMS needs paid player licences except for the open-source Windows player. All trademarks belong to their owners.": "✓ = elérhető · – = a gyártó nyilvános ár- vagy funkcióoldalán nincs feltüntetve. Az árak kijelzőnként és havonta, éves számlázással értendők, a gyártók nyilvános oldalai alapján, 2026. október 10-i állapot szerint. <sup>1</sup> Xibo: a felhős csomagok ára egyedi ajánlat; a saját szerveres CMS-hez fizetős lejátszó licencek kellenek, kivéve a nyílt forrású Windows lejátszót. Minden védjegy a tulajdonosáé.",
     "Compare": "Összehasonlítás",
+    "Templates": "Sablonok",
     "Comparison": "Összehasonlítás",
     "Narancs Signage vs paid signage": "Narancs Signage vs. fizetős rendszerek",
     "The popular signage services charge per screen, every month, and keep your content in their cloud. Narancs Signage runs on your own server, for free, with the features you would pay for.": "A népszerű signage szolgáltatások kijelzőnként, havonta számláznak, és a tartalmaidat a saját felhőjükben tartják. A Narancs Signage a saját szervereden fut, ingyen, azokkal a funkciókkal, amikért máshol fizetnél.",
@@ -254,6 +255,8 @@
   window.t = (s) => (lang === 'hu' && HU[s]) || s;
   document.documentElement.lang = lang;
 
+  // a sablongaléria (külön oldal) ugyanazon a nyelven nyíljon
+  if (lang === 'hu') for (const a of document.querySelectorAll('a[href^="https://mzzg-bazsi.github.io/narancs-signage-templates/"]')) a.search = '?lang=hu';
   if (lang === 'hu') {
     // data-i18n: az elem teljes belső HTML-je egy kulcs (vegyes tartalomhoz), máshol szövegcsomópontonként
     for (const el of document.querySelectorAll('[data-i18n]')) { const k = el.innerHTML.trim(); if (HU[k]) el.innerHTML = HU[k]; }
