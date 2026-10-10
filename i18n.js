@@ -2,6 +2,7 @@
    Elsőbbség: ?lang= → elmentett választás → böngésző nyelve. */
 (() => {
   const HU = {
+    "Menu": "Menü",
     "The second item is a split screen: services and the clock side by side.": "A második elem egy osztott képernyő: a szolgáltatások és az óra egymás mellett.",
     "Split screen": "Osztott képernyő",
     "Several items at once in zones: sidebar, bottom bar, L-shape, grids.": "Több tartalom egyszerre, zónákban: oldalsáv, alsó sáv, L alak, rácsok.",
@@ -253,6 +254,12 @@
     const d = document.querySelector('meta[name=description]');
     d.content = t(d.content);
   }
+
+  // fejléc menü szűk képernyőn: ☰ gomb nyitja, link választásakor bezárul
+  const navEl = document.querySelector('.nav'), toggle = document.querySelector('.nav-toggle');
+  const setOpen = (on) => { navEl?.classList.toggle('open', on); toggle?.setAttribute('aria-expanded', on); };
+  toggle?.addEventListener('click', () => setOpen(!navEl.classList.contains('open')));
+  document.querySelectorAll('.nav-links a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
 
   for (const b of document.querySelectorAll('.lang-switch button')) {
     b.setAttribute('aria-pressed', b.dataset.lang === lang);
