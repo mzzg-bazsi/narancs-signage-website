@@ -297,7 +297,7 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
 /* Fejléc menü: szűk képernyőn a ☰ gomb mögé csukódik */
 .nav-links { display: flex; align-items: center; gap: 22px; }
 .nav-toggle { display: none; place-items: center; width: 40px; height: 36px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); color: var(--text); font-size: 18px; line-height: 1; }
-@media (max-width: 1000px) {
+@media (max-width: 1180px) {
   .nav-toggle { display: inline-grid; }
   .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0; padding: 6px clamp(16px, 4vw, 48px) 12px; background: var(--bg); border-bottom: 1px solid var(--border); box-shadow: 0 12px 24px -16px rgba(80, 40, 10, .35); }
   .nav.open .nav-links { display: flex; }
