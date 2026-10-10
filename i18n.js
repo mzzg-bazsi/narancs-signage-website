@@ -2,6 +2,9 @@
    Elsőbbség: ?lang= → elmentett választás → böngésző nyelve. */
 (() => {
   const HU = {
+    "Try the admin panel": "Próbáld ki az admin felületet",
+    "The real admin interface with sample data: two screens, a playlist, a calendar, a form with submissions. Edit content, reorder the playlist, change the branding or send an alert — the previews update. Changes stay in your browser.": "A valódi admin felület minta adatokkal: két kijelző, egy lejátszási lista, egy naptár és egy űrlap beküldésekkel. Szerkeszd a tartalmakat, rendezd át a listát, változtasd meg az arculatot vagy küldj riasztást — az előnézetek frissülnek. A módosítások a böngésződben maradnak.",
+    "Open in a new tab ↗": "Megnyitás új lapon ↗",
     "Your screens.<br>Your server.<br><span>No subscription.</span>": "A te kijelzőid.<br>A te szervered.<br><span>Előfizetés nélkül.</span>",
     "Installs Node.js, a systemd service and daily backups. Open <code>http://SERVER-IP:8080/admin/</code> and create your account.": "Telepíti a Node.js-t, a systemd szolgáltatást és a napi mentést. Nyisd meg a <code>http://SZERVER-IP:8080/admin/</code> címet, és hozd létre a fiókodat.",
     "Reboot, then enter the 6-digit code shown on the screen under <b>Screens → New screen</b>. No install? Open <code>/player/</code> in any browser.": "Újraindítás után add meg a képernyőn megjelenő 6 jegyű kódot a <b>Képernyők → Új képernyő</b> menüben. Telepítés nélkül? Nyisd meg a <code>/player/</code> címet bármilyen böngészőben.",

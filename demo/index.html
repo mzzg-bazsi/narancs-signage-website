@@ -57,6 +57,16 @@
       <a class="btn" href="../#install">Install it yourself</a>
     </aside>
   </div>
+
+  <section class="admin-demo" id="admin">
+    <p class="kicker">Admin panel</p>
+    <h2>Try the admin panel</h2>
+    <p class="section-lead">The real admin interface with sample data: two screens, a playlist, a calendar, a form with submissions. Edit content, reorder the playlist, change the branding or send an alert — the previews update. Changes stay in your browser.</p>
+    <div class="browser">
+      <div class="bar"><i class="tl r"></i><i class="tl y"></i><i class="tl g"></i><span class="url">signage.local/admin/</span><a id="adminOpen" target="_blank">Open in a new tab ↗</a></div>
+      <iframe id="adminFrame" title="Narancs Signage admin panel" loading="lazy"></iframe>
+    </div>
+  </section>
 </main>
 
 <footer>
@@ -70,6 +80,7 @@
 (() => {
   const frame = document.getElementById('playerFrame');
   frame.src = `player/index.html?preview=demo:1&lang=${SITE_LANG}`;
+  document.getElementById('adminFrame').src = document.getElementById('adminOpen').href = `admin/index.html?lang=${SITE_LANG}#/`;
   const target = location.origin === 'null' ? '*' : location.origin;
   const post = (m) => frame.contentWindow.postMessage(m, target);
 

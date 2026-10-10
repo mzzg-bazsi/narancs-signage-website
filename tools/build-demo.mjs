@@ -21,9 +21,26 @@ for (const f of ['i18n.js', 'themes.js', 'splash/logo.svg', 'splash/logo-color.s
 let html = fs.readFileSync(`${SRC}/server/public/player/index.html`, 'utf8')
   .replaceAll('"/shared/', '"../shared/')
   .replace(/\s*<link rel="manifest"[^>]*>/, '')
-  .replace('<script src="../shared/i18n.js">', '<script src="shim.js"></script>\n  <script src="../shared/i18n.js">');
+  .replace('<script src="../shared/i18n.js">', '<script src="../shared/demo-store.js"></script>\n  <script src="shim.js"></script>\n  <script src="../shared/i18n.js">');
 if (!html.includes('shim.js')) throw new Error('index.html szerkezete megváltozott');
 fs.writeFileSync(`${OUT}/player/index.html`, html);
+
+// admin: a valódi admin felület, az /api/ hívásokat a demo/admin/shim.js szolgálja ki
+copy(`${SRC}/server/public/admin/admin.css`, `${OUT}/admin/admin.css`);
+copy(`${SRC}/server/public/shared/splash/favicon.svg`, `${OUT}/shared/splash/favicon.svg`);
+const adminJs = fs.readFileSync(`${SRC}/server/public/admin/admin.js`, 'utf8')
+  .replaceAll("'/shared/", "'../shared/")
+  .replaceAll('`/player/?', '`../player/?')
+  .replaceAll("'/player/?", "'../player/?");
+if (/['`]\/(shared|player)\//.test(adminJs)) throw new Error('admin.js: maradt abszolút útvonal');
+fs.writeFileSync(`${OUT}/admin/admin.js`, adminJs);
+let adminHtml = fs.readFileSync(`${SRC}/server/public/admin/index.html`, 'utf8')
+  .replaceAll('"/shared/', '"../shared/')
+  .replace('"/admin/admin.css"', '"admin.css"')
+  .replace('"/admin/admin.js"', '"admin.js"')
+  .replace('<script src="/api/lang.js"></script>', '<script src="../shared/demo-store.js"></script>\n  <script src="shim.js"></script>');
+if (!adminHtml.includes('shim.js') || adminHtml.includes('"/')) throw new Error('admin index.html szerkezete megváltozott');
+fs.writeFileSync(`${OUT}/admin/index.html`, adminHtml);
 
 // 2. minta konfiguráció nyelvenként egy friss tesztszerverről
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -48,6 +65,36 @@ for (const lang of ['en', 'hu']) {
     cfg.screen.settings = { ...cfg.screen.settings, ticker: TICKER[lang] };
     fs.writeFileSync(`${OUT}/player/config-${lang}.json`, JSON.stringify(cfg));
     console.log(`✔ config-${lang}.json: ${Object.keys(cfg.slides).length} slides`);
+
+    // admin bemutató: két párosított minta kijelző, statisztika és beküldött űrlapok, majd az admin adatai
+    const call = async (method, p, body) => {
+      const r = await fetch(base + p, { method, headers: { 'Content-Type': 'application/json', Cookie: cookie, Origin: base, 'X-Signage': '1' }, body: body && JSON.stringify(body) });
+      if (!r.ok) throw new Error(`${method} ${p} ${r.status}: ${await r.text()}`);
+      return r.json();
+    };
+    const SCREENS = lang === 'hu' ? ['Előtér', 'Kávézó'] : ['Lobby', 'Café'];
+    const slides = Object.values(cfg.slides);
+    for (const [i, name] of SCREENS.entries()) {
+      const device = `demo-device-${i + 1}-0000`;
+      const hello = await call('POST', '/api/player/hello', { device, info: { w: 1920, h: 1080, ua: 'Chromium 140 (demo)' } });
+      await call('POST', '/api/screens/pair', { code: hello.code, name, playlist_id: 1 });
+      const stats = Array.from({ length: 160 }, (_, k) => ({ kind: k % 4 ? 'view' : 'touch', slide_id: slides[k % slides.length].id, t: Date.now() - (k * 37 % 168) * 3600e3 }));
+      await call('POST', '/api/player/heartbeat', { device, stats, current: { id: slides[i].id, name: slides[i].name, type: slides[i].type }, info: { w: 1920, h: 1080 } });
+    }
+    const form = Object.values(cfg.forms)[0];
+    for (const [overall, liked] of [[5, 0], [4, 1], [5, 2], [3, 0]]) {
+      await call('POST', `/api/player/forms/${form.id}`, { device: 'demo-device-1-0000', data: { overall: String(overall), liked: form.fields[1].options[liked], comment: '' } });
+    }
+    const snap = { lang, captured: cfg.captured };
+    for (const [k, p] of Object.entries({
+      state: '/api/auth/state', settings: '/api/settings', dashboard: '/api/dashboard', screens: '/api/screens',
+      slides: '/api/slides', playlists: '/api/playlists', calendars: '/api/calendars', events: '/api/events',
+      forms: '/api/forms', media: '/api/media', alerts: '/api/alerts', users: '/api/users',
+    })) snap[k] = await call('GET', p);
+    snap.submissions = { [form.id]: await call('GET', `/api/forms/${form.id}/submissions`) };
+    delete snap.settings.data_dir;
+    fs.writeFileSync(`${OUT}/shared/admin-${lang}.json`, JSON.stringify(snap));
+    console.log(`✔ admin-${lang}.json`);
   } finally {
     srv.kill();
     await sleep(300);
