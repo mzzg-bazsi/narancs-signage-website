@@ -110,6 +110,37 @@
     $$('.gallery').forEach((g) => { g.hidden = g.dataset.panel !== b.dataset.tab; });
   }));
 
+  // Képnézegető: a galéria képei nagyítva, léptethetők (nyilak, gombok, húzás)
+  const lb = $('#lightbox');
+  let lbItems = [], lbIdx = 0;
+  function lbShow(i) {
+    lbIdx = (i + lbItems.length) % lbItems.length;
+    const a = lbItems[lbIdx];
+    $('#lbImg').src = a.href; $('#lbImg').alt = a.querySelector('img').alt;
+    $('#lbCap').textContent = a.nextElementSibling.textContent;
+    $('#lbNum').textContent = `${lbIdx + 1} / ${lbItems.length}`;
+  }
+  $$('.gallery a').forEach((a) => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    lbItems = $$('a', a.closest('.gallery'));
+    lbShow(lbItems.indexOf(a));
+    lb.showModal();
+  }));
+  $('#lbPrev').addEventListener('click', () => lbShow(lbIdx - 1));
+  $('#lbNext').addEventListener('click', () => lbShow(lbIdx + 1));
+  $('#lbClose').addEventListener('click', () => lb.close());
+  lb.addEventListener('click', (e) => { if (e.target === lb || e.target.tagName === 'FIGURE') lb.close(); });
+  lb.addEventListener('keydown', (e) => {
+    const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (d) { e.preventDefault(); lbShow(lbIdx + d); }
+  });
+  let swipeX = null;
+  lb.addEventListener('pointerdown', (e) => { swipeX = e.clientX; });
+  lb.addEventListener('pointerup', (e) => {
+    if (swipeX !== null && Math.abs(e.clientX - swipeX) > 50) lbShow(lbIdx + (e.clientX < swipeX ? 1 : -1));
+    swipeX = null;
+  });
+
   // Parancsok másolása
   $$('.copy').forEach((b) => b.addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(b.previousElementSibling.textContent); b.textContent = 'Copied'; }
