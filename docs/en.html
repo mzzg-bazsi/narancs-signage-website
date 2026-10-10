@@ -190,6 +190,24 @@ npm run dev</code></pre>
 </table>
 <p>From a content item you can open its full-screen preview, duplicate it, or see which playlists use it before deleting.</p>
 
+<h3 id="templates">Templates</h3>
+<p>Under <b>Templates</b> you find ready-made content packs, each with a live preview. <b>Install</b> creates a new playlist with all the content, forms and calendars of the template — in your own branding colours and with your organisation's name. Your existing content is not changed, and you can edit everything afterwards.</p>
+<table>
+  <tr><th>Template</th><th>Contents</th></tr>
+  <tr><td>🍽️ Restaurant &amp; café</td><td>Welcome, today's menu next to the clock (split screen), daily special, opening hours, Wi-Fi, feedback form</td></tr>
+  <tr><td>🏢 Office lobby</td><td>Visitor welcome, meetings with the clock, touch check-in form, visitor menu, company news, Wi-Fi</td></tr>
+  <tr><td>🛍️ Shop</td><td>Weekend sale, sale countdown, new products, opening hours, loyalty QR, feedback</td></tr>
+  <tr><td>🩺 Medical practice</td><td>Welcome, doctors today, opening hours, patient information, online booking QR, clock</td></tr>
+  <tr><td>🎓 School</td><td>Announcement, school events, canteen menu, countdown to the holidays, interactive info menu</td></tr>
+  <tr><td>🏨 Hotel reception</td><td>Guest welcome, services and events next to the weather, Wi-Fi, guest feedback</td></tr>
+  <tr><td>💪 Gym &amp; fitness</td><td>Weekly class schedule (recurring events), memberships, monthly challenge countdown, member app QR</td></tr>
+  <tr><td>🎤 Conference &amp; event</td><td>Welcome, agenda next to the clock, speakers, keynote countdown, Wi-Fi, session rating</td></tr>
+  <tr><td>🍹 Bar &amp; pub</td><td>Happy hour, drinks menu, weekly quiz and live music, match countdown, food menu QR</td></tr>
+  <tr><td>💇 Salon &amp; beauty</td><td>Welcome, services with prices, offer of the month, opening hours, booking QR, feedback</td></tr>
+</table>
+<p><b>Your own templates:</b> the <b>Export</b> button of any content item or playlist downloads a <code>.narancs.json</code> file. It contains the content, everything it links to (menu and card targets, zones), the structure of forms and the images (up to 40 MB). Form submissions, your own calendar events and iCal links are left out. <b>Import from file</b> on the Templates page loads it into any Narancs Signage system; the file is checked first (known content types, valid links, allowed media types, size limits) and imported in one step — if anything is wrong, nothing is created.</p>
+<p>The format is plain JSON (<code>"format": "narancs-template", "version": 1</code>): content refers to each other by names (<code>s1</code>, <code>f1</code>, <code>c1</code>, <code>m1</code>), texts can be bilingual (<code>{"en": "…", "hu": "…"}</code>), and <code>{{org_name}}</code>, <code>{{city}}</code> and <code>{{date+N}}</code> are filled in when importing.</p>
+
 <h3 id="media">Media library</h3>
 <p>Upload images (JPG, PNG, WebP, GIF), videos (MP4, WebM) and PDFs by drag and drop. The maximum file size is 2 GB by default (<code>MAX_UPLOAD_MB</code>). Each file has a direct link; the players download and cache them for offline use.</p>
 
@@ -322,6 +340,8 @@ sudo systemctl start narancs-signage</code></pre>
   <tr><td><code>GET /api/screens/:id/screenshot</code></td><td>The latest screenshot (JPEG); request a new one with the <code>screenshot</code> command.</td></tr>
   <tr><td><code>GET|POST /api/users</code> · <code>PUT|DELETE /api/users/:id</code></td><td>Users and roles (<code>admin</code>, <code>editor</code>, <code>viewer</code>).</td></tr>
   <tr><td><code>GET|POST /api/tokens</code> · <code>DELETE /api/tokens/:id</code></td><td>API keys: <code>{ name, role }</code>; the response contains the key once.</td></tr>
+  <tr><td><code>GET /api/templates</code> · <code>POST /api/templates/:id/install</code></td><td>Built-in templates and installing one. Preview: <code>/player/?preview=template:ID</code>.</td></tr>
+  <tr><td><code>POST /api/templates/export</code> · <code>POST /api/templates/import</code></td><td>Export <code>{ slide_ids, playlist_id, name, description, category }</code> → template JSON; import a template JSON.</td></tr>
 </table>
 <p>The player uses the public <code>/api/player/*</code> endpoints (hello, config, stream, heartbeat, forms, weather, rss), identified by its device ID.</p>
 </section>

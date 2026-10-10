@@ -190,6 +190,24 @@ npm run dev</code></pre>
 </table>
 <p>Egy tartalomnál megnyithatod a teljes képernyős előnézetét, másolatot készíthetsz róla, és törlés előtt látod, mely listák használják.</p>
 
+<h3 id="templates">Sablonok</h3>
+<p>A <b>Sablonok</b> menüben kész tartalomcsomagokat találsz, mindegyiket élő előnézettel. A <b>Telepítés</b> egy új lejátszási listát hoz létre a sablon összes tartalmával, űrlapjával és naptárával — a saját arculatod színeivel és a szervezeted nevével. A meglévő tartalmaid nem változnak, utána mindent szabadon szerkeszthetsz.</p>
+<table>
+  <tr><th>Sablon</th><th>Tartalma</th></tr>
+  <tr><td>🍽️ Étterem és kávézó</td><td>Üdvözlés, mai menü az órával egymás mellett (osztott képernyő), napi ajánlat, nyitvatartás, Wi-Fi, visszajelzés űrlap</td></tr>
+  <tr><td>🏢 Irodai előtér</td><td>Vendégfogadás, megbeszélések órával, érintős vendégregisztráció, vendég menü, céges hírek, Wi-Fi</td></tr>
+  <tr><td>🛍️ Üzlet</td><td>Hétvégi akció, visszaszámlálás, új termékek, nyitvatartás, törzsvásárlói QR, visszajelzés</td></tr>
+  <tr><td>🩺 Orvosi rendelő</td><td>Üdvözlés, mai rendelés, rendelési idő, betegtájékoztató, online foglalás QR, óra</td></tr>
+  <tr><td>🎓 Iskola</td><td>Közlemény, iskolai események, heti menza, visszaszámlálás a szünetig, interaktív információs menü</td></tr>
+  <tr><td>🏨 Szálloda recepció</td><td>Vendégköszöntő, szolgáltatások és programok az időjárással, Wi-Fi, vendégvisszajelzés</td></tr>
+  <tr><td>💪 Edzőterem</td><td>Heti órarend (ismétlődő események), bérletek, havi kihívás visszaszámlálóval, tagsági app QR</td></tr>
+  <tr><td>🎤 Konferencia, rendezvény</td><td>Üdvözlés, program az órával, előadók, visszaszámlálás a nyitóelőadásig, Wi-Fi, előadás-értékelés</td></tr>
+  <tr><td>🍹 Bár, söröző</td><td>Happy hour, itallap, heti kvízest és élőzene, meccs visszaszámláló, étlap QR</td></tr>
+  <tr><td>💇 Szépségszalon</td><td>Üdvözlés, szolgáltatások árakkal, havi ajánlat, nyitvatartás, foglalás QR, visszajelzés</td></tr>
+</table>
+<p><b>Saját sablonok:</b> bármely tartalom vagy lejátszási lista <b>Exportálás</b> gombja egy <code>.narancs.json</code> fájlt tölt le. Benne van a tartalom, minden, amire hivatkozik (menü- és kártyacélok, zónák), az űrlapok szerkezete és a képek (legfeljebb 40 MB). Az űrlap-beküldések, a saját naptáresemények és az iCal linkek nem kerülnek bele. A Sablonok oldal <b>Importálás fájlból</b> gombjával bármely Narancs Signage rendszerbe betölthető; a fájlt előbb ellenőrzi (ismert tartalomtípusok, érvényes hivatkozások, engedélyezett médiatípusok, méretkorlátok), és egy lépésben importálja — ha valami hibás, semmi nem jön létre.</p>
+<p>A formátum egyszerű JSON (<code>"format": "narancs-template", "version": 1</code>): a tartalmak nevekkel hivatkoznak egymásra (<code>s1</code>, <code>f1</code>, <code>c1</code>, <code>m1</code>), a szövegek lehetnek kétnyelvűek (<code>{"en": "…", "hu": "…"}</code>), a <code>{{org_name}}</code>, <code>{{city}}</code> és <code>{{date+N}}</code> helyőrzőket importáláskor tölti ki.</p>
+
 <h3 id="media">Médiatár</h3>
 <p>Képek (JPG, PNG, WebP, GIF), videók (MP4, WebM) és PDF-ek feltöltése húzással. Egy fájl legfeljebb 2 GB lehet (<code>MAX_UPLOAD_MB</code>). Minden fájlnak van közvetlen linkje; a lejátszók letöltik és eltárolják őket az offline működéshez.</p>
 
@@ -322,6 +340,8 @@ sudo systemctl start narancs-signage</code></pre>
   <tr><td><code>GET /api/screens/:id/screenshot</code></td><td>A legutóbbi képernyőkép (JPEG); újat a <code>screenshot</code> paranccsal lehet kérni.</td></tr>
   <tr><td><code>GET|POST /api/users</code> · <code>PUT|DELETE /api/users/:id</code></td><td>Felhasználók és szerepkörök (<code>admin</code>, <code>editor</code>, <code>viewer</code>).</td></tr>
   <tr><td><code>GET|POST /api/tokens</code> · <code>DELETE /api/tokens/:id</code></td><td>API kulcsok: <code>{ name, role }</code>; a válasz egyszer tartalmazza a kulcsot.</td></tr>
+  <tr><td><code>GET /api/templates</code> · <code>POST /api/templates/:id/install</code></td><td>Beépített sablonok és telepítésük. Előnézet: <code>/player/?preview=template:ID</code>.</td></tr>
+  <tr><td><code>POST /api/templates/export</code> · <code>POST /api/templates/import</code></td><td>Export <code>{ slide_ids, playlist_id, name, description, category }</code> → sablon JSON; sablon JSON importálása.</td></tr>
 </table>
 <p>A lejátszó a nyilvános <code>/api/player/*</code> végpontokat használja (hello, config, stream, heartbeat, forms, weather, rss), az eszközazonosítójával.</p>
 </section>

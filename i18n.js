@@ -2,6 +2,19 @@
    Elsőbbség: ?lang= → elmentett választás → böngésző nyelve. */
 (() => {
   const HU = {
+    "10 ready-made templates": "10 kész sablon",
+    "Install a complete content pack in one click – in your own colours – or export your own as a": "Telepíts egy teljes tartalomcsomagot egy kattintással – a saját színeiddel –, vagy exportáld a sajátodat",
+    "file and import it anywhere.": "fájlba, és importáld bárhová.",
+    "🍽️ Restaurant": "🍽️ Étterem",
+    "🏢 Office": "🏢 Iroda",
+    "🛍️ Shop": "🛍️ Üzlet",
+    "🩺 Clinic": "🩺 Rendelő",
+    "🎓 School": "🎓 Iskola",
+    "🏨 Hotel": "🏨 Szálloda",
+    "💪 Gym": "💪 Edzőterem",
+    "🎤 Conference": "🎤 Konferencia",
+    "🍹 Bar": "🍹 Bár",
+    "💇 Salon": "💇 Szépségszalon",
     "Menu": "Menü",
     "The second item is a split screen: services and the clock side by side.": "A második elem egy osztott képernyő: a szolgáltatások és az óra egymás mellett.",
     "Split screen": "Osztott képernyő",

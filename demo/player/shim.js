@@ -23,7 +23,9 @@
   const preview = new URLSearchParams(location.search).get('preview') || '';
   // csak az első konfiguráció kéréskor töltjük be (a zónák beágyazott lejátszói nem kérnek konfigurációt)
   let config = null;
-  const getConfig = () => (config ||= preview.startsWith('demo') ? realFetch(`config-${lang}.json`).then((r) => r.json()).then(prepare) : window.DemoStore.load().then((d) => fromStore(d, preview)));
+  const getConfig = () => (config ||= preview.startsWith('demo') ? realFetch(`config-${lang}.json`).then((r) => r.json()).then(prepare)
+    : preview.startsWith('template:') ? window.DemoStore.load().then((d) => d.template_previews?.[preview.slice(9)])
+    : window.DemoStore.load().then((d) => fromStore(d, preview)));
 
   function fromStore(d, pv) {
     const [kind, idStr] = pv.split(':'), id = +idStr;

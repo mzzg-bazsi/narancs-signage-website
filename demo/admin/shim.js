@@ -61,6 +61,9 @@
         const r = await realFetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q.get('q') || '')}&count=6&language=${S.lang}&format=json`);
         return ((await r.json()).results || []).map((x) => ({ name: x.name, country: x.country, admin: x.admin1, lat: x.latitude, lon: x.longitude }));
       }
+      case 'templates':
+        if (method === 'GET') return d.templates || { categories: {}, templates: [] };
+        fail(HU ? 'A bemutatóban sablon nem telepíthető és nem exportálható – telepítsd a rendszert, és próbáld ki élesben!' : 'Templates cannot be installed or exported in the demo – install the system and try it for real!');
       case 'reports': return d.reports || { totals: { views: 0, touches: 0, screens: 0, slides: 0 }, by_slide: [], by_screen: [], by_day: [] };
       case 'tokens':
         if (method === 'POST') fail(HU ? 'API kulcs a bemutatóban nem hozható létre.' : 'API keys cannot be created in the demo.');

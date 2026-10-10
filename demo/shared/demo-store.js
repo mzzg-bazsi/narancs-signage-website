@@ -34,8 +34,10 @@
     // lusta betöltés: a mentett állapot, ha ugyanazon a nyelven van, különben a friss minta adat
     load() {
       return (loading ||= (async () => {
+        // a mentett állapot csak ugyanarra a nyelvre és ugyanarra a minta-kiadásra érvényes (új demó → friss adatok)
         const saved = read();
-        data = saved?.lang === lang ? saved : prepare(await (await fetch(`${base}admin-${lang}.json`)).json());
+        const fresh = await (await fetch(`${base}admin-${lang}.json`)).json();
+        data = saved?.lang === lang && saved.captured === fresh.captured ? saved : prepare(fresh);
         save();
         return data;
       })());

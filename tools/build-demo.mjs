@@ -100,6 +100,10 @@ for (const lang of ['en', 'hu']) {
       forms: '/api/forms', media: '/api/media', alerts: '/api/alerts', users: '/api/users', tokens: '/api/tokens', reports: '/api/reports',
     })) snap[k] = await call('GET', p);
     snap.submissions = { [form.id]: await call('GET', `/api/forms/${form.id}/submissions`) };
+    // sablon galéria: a lista és minden sablon előnézeti konfigurációja (a demóban telepíteni nem lehet)
+    snap.templates = await call('GET', '/api/templates');
+    snap.template_previews = {};
+    for (const t of snap.templates.templates) snap.template_previews[t.id] = await call('GET', `/api/preview?template=${t.id}`);
     delete snap.settings.data_dir;
     fs.writeFileSync(`${OUT}/shared/admin-${lang}.json`, JSON.stringify(snap));
     console.log(`✔ admin-${lang}.json`);

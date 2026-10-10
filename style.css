@@ -305,3 +305,12 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
   .nav-links a:last-child { border-bottom: 0; }
   .nav nav { gap: 10px; }
 }
+
+/* Sablonok sáv a főoldalon */
+.tpl-strip { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px; align-items: center; margin-top: 28px; padding: 24px 26px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); }
+.tpl-strip h3 { margin: 0 0 6px; font-size: 20px; }
+.tpl-strip p { margin: 0; color: var(--muted); font-size: 15px; }
+.tpl-strip code { font: 13px var(--mono); background: var(--bg2); padding: 1px 5px; border-radius: 4px; }
+.tpl-strip ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.tpl-strip li { background: var(--soft); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 500; }
+@media (max-width: 800px) { .tpl-strip { grid-template-columns: 1fr; } }
