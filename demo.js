@@ -1,4 +1,4 @@
-/* Narancs Signage bemutató – az öt lépéses interaktív ablak és a kijelzőfal */
+/* Narancs Signage bemutató – az öt lépéses interaktív ablak */
 (() => {
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -6,39 +6,12 @@
   const steps = $$('.step'), panes = $$('.pane');
   const state = { step: 0, install: 0, paired: false, alert: false };
 
-  // Kijelzőfal: minden pont egy kijelző, fix véletlen értékkel (r), ebből és a lépésből jön az állapota
-  const dotsEl = $('#dots');
-  const dots = Array.from({ length: 144 }, (_, i) => {
-    const el = document.createElement('i');
-    const r = ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
-    el.style.transitionDelay = (r * 0.6).toFixed(2) + 's';
-    dotsEl.append(el);
-    return { el, r };
-  });
-  function dotState(r) {
-    const s = state.step;
-    if (s === 0) return r < 0.1 + 0.2 * state.install ? 'pend' : 'off';
-    if (s === 1) { const p = state.paired ? 0.4 : 0.28; return r < p ? 'pair' : r < p + 0.08 ? 'pend' : 'off'; }
-    if (s === 2) return r < 0.6 ? 'pair' : r < 0.66 ? 'pend' : 'off';
-    if (s === 3) return r < 0.3 ? 'play' : r < 0.75 ? 'pair' : r < 0.8 ? 'pend' : 'off';
-    return r < 0.88 ? (state.alert ? 'alert' : 'play') : 'off';
-  }
-  const paintDots = () => dots.forEach((d) => { d.el.className = 's-' + dotState(d.r); });
-  // érintések a lejátszás lépésben
-  setInterval(() => {
-    if (state.step !== 4 || state.alert) return;
-    const d = dots[Math.floor(Math.random() * dots.length)];
-    if (d.el.className !== 's-play') return;
-    d.el.className = 's-touch';
-    setTimeout(() => { if (d.el.className === 's-touch') d.el.className = 's-' + dotState(d.r); }, 700);
-  }, 260);
 
   function go(i) {
     state.step = i;
     steps.forEach((b, j) => { b.setAttribute('aria-selected', j === i); b.tabIndex = j === i ? 0 : -1; b.classList.toggle('done', j < i); });
     panes.forEach((p, j) => p.classList.toggle('active', j === i));
     if (i === 0 && state.install < 1 && !installTimer) runInstall();
-    paintDots();
   }
   steps.forEach((b, i) => b.addEventListener('click', () => go(i)));
   $('.steps').addEventListener('keydown', (e) => {
@@ -70,7 +43,6 @@
       ticks.forEach((t, i) => t.classList.toggle('on', i < on));
       $('#instStatus').textContent = MSGS.filter(([p]) => p <= state.install).pop()[1];
       if (state.install >= 1) { clearInterval(installTimer); installTimer = null; }
-      if (state.step === 0) paintDots();
     }, 110);
   }
   $('#instRun').addEventListener('click', runInstall);
@@ -82,7 +54,7 @@
     btn.disabled = true;
     cells.forEach((c, i) => setTimeout(() => {
       c.textContent = code[i]; c.classList.add('on');
-      if (i === cells.length - 1) setTimeout(() => { $('#pairOk').hidden = false; state.paired = true; btn.textContent = 'Paired'; paintDots(); }, 350);
+      if (i === cells.length - 1) setTimeout(() => { $('#pairOk').hidden = false; state.paired = true; btn.textContent = 'Paired'; }, 350);
     }, 140 * (i + 1)));
   });
 
@@ -128,7 +100,6 @@
     state.alert = !state.alert;
     $('#alert').hidden = !state.alert;
     e.currentTarget.textContent = state.alert ? 'Clear alert' : 'Send emergency alert';
-    paintDots();
   });
 
   go(0);

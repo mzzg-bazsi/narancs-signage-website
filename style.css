@@ -3,7 +3,7 @@
   --bg: #fff8f2; --bg2: #fff1e5; --surface: #fff; --border: #f3dfcf; --border-strong: #e9c8ad;
   --text: #2a1a10; --muted: #8d6f5b; --primary: #f59e5b; --primary-strong: #e07a35; --soft: #ffe7d4;
   --dot: rgba(170, 110, 60, .22);
-  --s-off: #e6dcd3; --s-pend: #e9b44c; --s-pair: #6b5a4e; --s-play: #f59e5b; --s-touch: #4a86d6; --s-alert: #dc4b3e;
+  --s-alert: #dc4b3e;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
   color-scheme: light;
 }
@@ -42,8 +42,8 @@ h1 span { color: var(--primary-strong); }
 
 /* Dőlt bemutató ablak */
 .stage { perspective: 2000px; }
-.win, .wall { transform: rotateX(9deg) rotateY(-13deg) rotateZ(-1.5deg); transform-origin: 50% 50%; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
-.stage:hover .win, .stage:hover .wall, .stage:focus-within .win, .stage:focus-within .wall { transform: rotateX(4deg) rotateY(-6deg) rotateZ(-.6deg); }
+.win { transform: rotateX(9deg) rotateY(-13deg) rotateZ(-1.5deg); transform-origin: 50% 50%; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+.stage:hover .win, .stage:focus-within .win { transform: rotateX(4deg) rotateY(-6deg) rotateZ(-.6deg); }
 .win {
   background: radial-gradient(rgba(0,0,0,.07) 1px, transparent 1.4px) 0 0 / 18px 18px, #f8f6f4;
   border-radius: 12px; border: 1px solid rgba(0,0,0,.06);
@@ -122,14 +122,6 @@ h1 span { color: var(--primary-strong); }
 .alert span { font-size: 11px; }
 @keyframes blink { 50% { background: #b8352a; } }
 
-/* Kijelzőfal az ablak alatt */
-.wall { margin: 14px 10px 0; padding: 14px 16px 10px; background: #f4f1ee; border: 1px solid rgba(0,0,0,.06); border-radius: 10px; box-shadow: 0 20px 40px -24px rgba(80,40,10,.4); }
-.dots { display: grid; grid-template-columns: repeat(48, 1fr); gap: 3px; }
-.dots i { aspect-ratio: 1; border-radius: 50%; transition: background .5s; }
-.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; font: 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #8a817b; }
-.legend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
-.s-off { background: var(--s-off); } .s-pend { background: var(--s-pend); } .s-pair { background: var(--s-pair); }
-.s-play { background: var(--s-play); } .s-touch { background: var(--s-touch); } .s-alert { background: var(--s-alert); }
 
 /* Szakaszok */
 .section { max-width: 1200px; margin: 0 auto; padding: clamp(48px, 7vw, 96px) clamp(16px, 4vw, 48px); }
@@ -167,7 +159,7 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
 
 @media (max-width: 1020px) {
   .hero { grid-template-columns: 1fr; }
-  .win, .wall, .stage:hover .win, .stage:hover .wall { transform: none; }
+  .win, .stage:hover .win { transform: none; }
 }
 @media (max-width: 640px) {
   .nav nav a:not(.btn) { display: none; }
@@ -176,8 +168,6 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
   .pane { padding: 20px 16px; }
   .split { grid-template-columns: 1fr; gap: 14px; }
   .blk { font-size: 9px; }
-  .dots { grid-template-columns: repeat(24, 1fr); }
-  .dots i:nth-child(n+73) { display: none; }
   .gallery { grid-template-columns: 1fr; }
   .install { grid-template-columns: 1fr; }
 }
