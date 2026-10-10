@@ -367,13 +367,13 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
 .wall .info { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .wall .info h3 { margin: 0; font-size: 20px; line-height: 1.25; letter-spacing: -.01em; display: flex; gap: 10px; align-items: baseline; }
 .wall .desc { margin: 0; color: #5a4334; font-size: 15px; }
-.wall .facts { margin: 0; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.wall .facts { margin: 0; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; }
 .wall .langs { display: inline-flex; gap: 4px; }
-.wall .langs abbr { text-decoration: none; border: 1px solid var(--border-strong); border-radius: 4px; padding: 0 5px; font: 600 11px var(--mono); color: var(--text); }
-.wall .langs abbr.off { color: var(--muted); border-style: dashed; opacity: .7; }
+.wall .langs abbr { text-decoration: none; background: var(--soft); border: 1px solid transparent; border-radius: 999px; padding: 1px 8px; font-size: 12px; font-weight: 600; line-height: 18px; color: var(--primary-strong); }
+.wall .langs abbr.off { background: none; border: 1px dashed var(--border-strong); color: var(--muted); }
 .wall .actions { display: flex; align-items: center; gap: 14px; margin-top: auto; padding-top: 8px; }
 .wall .actions .btn { padding: 8px 18px; font-size: 15px; }
-.wall .actions small { color: var(--muted); font: 12px var(--mono); }
+.wall .actions small { color: var(--muted); font-size: 13px; }
 .gallery-share { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 80px); margin-top: clamp(64px, 9vw, 120px); padding-top: clamp(28px, 4vw, 48px); border-top: 1px solid var(--border); }
 .gallery-share .section-lead { margin-bottom: 22px; }
 .gallery-steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 22px; align-content: center; }
