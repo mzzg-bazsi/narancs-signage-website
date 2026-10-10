@@ -221,3 +221,45 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
 .browser .url { margin-left: 12px; flex: 1; max-width: 420px; background: #ece7e3; border-radius: 6px; padding: 3px 10px; font: 12px var(--mono); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .browser .bar a { margin-left: auto; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .browser iframe { display: block; width: 100%; height: min(78vh, 820px); border: 0; background: #fff8f2; }
+
+/* Dokumentáció */
+.nav nav a[aria-current="page"] { color: var(--text); }
+.docs { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 48px; max-width: 1200px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 48px) 64px; }
+.toc details { position: sticky; top: 84px; max-height: calc(100vh - 100px); overflow: auto; }
+.toc summary { font: 600 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); cursor: pointer; margin-bottom: 8px; list-style: none; }
+.toc summary::-webkit-details-marker { display: none; }
+.toc nav a { display: block; padding: 4px 10px; border-left: 2px solid var(--border); color: var(--text); text-decoration: none; font-size: 14px; font-weight: 600; }
+.toc nav a.toc-sub { padding-left: 22px; font-weight: 400; color: var(--muted); font-size: 13px; }
+.toc nav a:hover { color: var(--primary-strong); }
+.toc nav a.on { border-left-color: var(--primary-strong); color: var(--primary-strong); background: var(--soft); }
+.doc { max-width: 820px; }
+.doc section { scroll-margin-top: 84px; padding-bottom: 28px; border-bottom: 1px solid var(--border); margin-bottom: 36px; }
+.doc section:last-child { border-bottom: 0; }
+.doc h1 { font-size: clamp(32px, 4vw, 46px); margin-bottom: 10px; }
+.doc h2 { font-size: clamp(26px, 3vw, 34px); margin: 0 0 14px; }
+.doc h3 { font-size: 19px; margin: 30px 0 8px; scroll-margin-top: 84px; }
+.doc p, .doc li, .doc dd { color: #4a3528; }
+.doc-lead { font-size: 19px; color: var(--muted) !important; }
+.doc code { font: 13.5px var(--mono); background: var(--bg2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 5px; word-break: break-word; }
+.doc pre { position: relative; background: #2a201a; color: #ffd8b8; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font: 13px/1.7 var(--mono); margin: 10px 0 16px; }
+.doc pre code { background: none; border: 0; padding: 0; color: inherit; word-break: normal; }
+.doc pre.has-copy { padding-right: 78px; }
+.doc pre .copy { top: 10px; right: 10px; }
+.doc pre.diagram { background: var(--surface); color: var(--text); border: 1px solid var(--border); font-size: 11.5px; line-height: 1.45; }
+.doc table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 14.5px; display: block; overflow-x: auto; }
+.doc th, .doc td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+.doc th { background: var(--bg2); font-weight: 700; white-space: nowrap; }
+.doc td:first-child { white-space: nowrap; font-weight: 500; }
+.doc .note { background: var(--soft); border-left: 3px solid var(--primary); padding: 10px 14px; border-radius: 0 8px 8px 0; }
+.doc kbd { font: 600 12px var(--mono); background: var(--surface); border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; }
+.doc .steps-list > li { margin-bottom: 12px; }
+.doc .faq dt { font-weight: 700; margin-top: 16px; }
+.doc .faq dd { margin: 4px 0 0; }
+@media (max-width: 900px) {
+  .docs { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-top: 16px; }
+  .toc details { position: static; max-height: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+  .toc summary { margin: 0; }
+  .toc summary::after { content: " ▾"; }
+  .doc td:first-child { white-space: normal; }
+}
+.more-docs { margin: 22px 0 0; font-weight: 600; }

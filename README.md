@@ -7,6 +7,7 @@ Plain static HTML/CSS/JS, no build step: open `index.html` or serve the folder. 
 - `index.html` – landing page with the five-step interactive demo
 - `demo/` – the **real player** running in the browser: `demo/player/shim.js` answers its API calls (sample config with dates shifted to today, live weather from Open-Meteo)
 - `demo/admin/` – the **real admin panel** with sample data: `demo/admin/shim.js` emulates the API in the browser, data lives in `localStorage` (`demo/shared/demo-store.js`, shared with the player previews)
+- `docs/` – documentation: `docs/en.html` and `docs/hu.html` hold the text, `docs/index.html` loads the one for the chosen language and builds the table of contents
 - `i18n.js` – translations (key = English text)
 
 **Updating the live demos** after player or admin changes (starts a throwaway server on port 8199, needs Node ≥ 22.13):

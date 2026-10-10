@@ -2,6 +2,11 @@
    Elsőbbség: ?lang= → elmentett választás → böngésző nyelve. */
 (() => {
   const HU = {
+    "Read the full documentation →": "A teljes dokumentáció →",
+    "Docs": "Dokumentáció",
+    "Contents": "Tartalom",
+    "Documentation · Narancs Signage": "Dokumentáció · Narancs Signage",
+    "Install, run and use Narancs Signage: server and player installation, admin panel guide, content types, operations, troubleshooting and API reference.": "A Narancs Signage telepítése, üzemeltetése és használata: szerver és lejátszó telepítés, admin felület, tartalomtípusok, üzemeltetés, hibaelhárítás és API referencia.",
     "Try the admin panel": "Próbáld ki az admin felületet",
     "The real admin interface with sample data: two screens, a playlist, a calendar, a form with submissions. Edit content, reorder the playlist, change the branding or send an alert — the previews update. Changes stay in your browser.": "A valódi admin felület minta adatokkal: két kijelző, egy lejátszási lista, egy naptár és egy űrlap beküldésekkel. Szerkeszd a tartalmakat, rendezd át a listát, változtasd meg az arculatot vagy küldj riasztást — az előnézetek frissülnek. A módosítások a böngésződben maradnak.",
     "Open in a new tab ↗": "Megnyitás új lapon ↗",

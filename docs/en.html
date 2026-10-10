@@ -1,0 +1,321 @@
+<article class="doc" lang="en">
+
+<section id="intro">
+<h1>Narancs Signage documentation</h1>
+<p class="doc-lead">Everything you need to install, run and use Narancs Signage — a complete, self-hosted digital signage system.</p>
+<p>Narancs Signage has three parts:</p>
+<ul>
+  <li><b>Server</b> — a small Node.js application with an SQLite database. It serves the admin panel, stores your content and media, and pushes changes to the screens in real time.</li>
+  <li><b>Admin panel</b> — a web app at <code>/admin/</code> where you manage screens, playlists, content, branding and alerts.</li>
+  <li><b>Player</b> — a web app at <code>/player/</code> that runs full screen on each display. The player installer turns any Ubuntu Server or Raspberry Pi into a locked-down kiosk that runs it.</li>
+</ul>
+<pre class="diagram">┌─────────────────────────┐   HTTP + SSE (real-time push)   ┌──────────────────────────┐
+│ Server (Ubuntu)         │ ◄─────────────────────────────► │ Display (ARM / x86)      │
+│ Node.js, SQLite         │                                 │ Chromium kiosk           │
+│ /admin   admin panel    │                                 │ /player  player          │
+│ /player  player app     │                                 │ offline cache            │
+└─────────────────────────┘                                 └──────────────────────────┘</pre>
+<h3>Requirements</h3>
+<table>
+  <tr><th>Part</th><th>Requirement</th></tr>
+  <tr><td>Server</td><td>Ubuntu Server 22.04 / 24.04 (amd64 or arm64). 1 CPU core and 1 GB RAM are plenty for dozens of screens; disk space depends on your media. Node.js ≥ 22.13 (the installer sets up Node.js 24).</td></tr>
+  <tr><td>Display</td><td>Ubuntu Server 22.04 / 24.04 or Raspberry Pi OS Lite (arm64, armhf, amd64). Raspberry Pi 4/5 or any mini PC. A monitor or TV over HDMI; a touch screen for interactive content.</td></tr>
+  <tr><td>Network</td><td>The displays must reach the server over HTTP (default port 8080). Weather, RSS and iCal feeds need internet access on the server.</td></tr>
+  <tr><td>Browser-only</td><td>Any modern browser can open <code>/player/</code> without installing anything (smart TVs, tablets, signage sticks).</td></tr>
+</table>
+</section>
+
+<section id="quickstart">
+<h2>Quick start</h2>
+<ol class="steps-list">
+  <li><b>Install the server</b> on an Ubuntu machine:
+<pre><code>git clone https://github.com/mzzg-bazsi/narancs-signage.git
+cd narancs-signage
+sudo ./install/install-server.sh</code></pre></li>
+  <li><b>Open the admin panel</b> at the address the installer prints (<code>http://SERVER-IP:8080/admin/</code>), choose a language and create your admin account. A default playlist with sample content is created automatically.</li>
+  <li><b>Install the player</b> on each display device:
+<pre><code>curl -fsSL http://SERVER-IP:8080/install-player.sh | sudo bash</code></pre></li>
+  <li><b>Reboot the display.</b> It shows a 6-digit pairing code.</li>
+  <li><b>Pair it</b> in the admin panel under <b>Screens → New screen</b>. The screen starts playing the default playlist right away.</li>
+</ol>
+<p class="note">Everything on one device? Install the server first, then the player on the same machine with the address <code>http://localhost:8080</code>.</p>
+</section>
+
+<section id="server">
+<h2>Server installation</h2>
+<p>Run the installer from the cloned project folder:</p>
+<pre><code>sudo ./install/install-server.sh [--port 8080] [--data /var/lib/narancs-signage]</code></pre>
+<table>
+  <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+  <tr><td><code>--port</code></td><td>8080</td><td>HTTP port of the server.</td></tr>
+  <tr><td><code>--data</code></td><td><code>/var/lib/narancs-signage</code></td><td>Where the database and the media files are stored.</td></tr>
+</table>
+<p>The installer:</p>
+<ul>
+  <li>installs Node.js 24 from NodeSource if a suitable version is missing,</li>
+  <li>copies the program to <code>/opt/narancs-signage</code> and creates a <code>signage</code> system user,</li>
+  <li>creates and starts the <code>narancs-signage</code> systemd service,</li>
+  <li>installs the <code>signage-backup</code> command and a daily backup at 03:00,</li>
+  <li>opens the port in the firewall if <code>ufw</code> is active.</li>
+</ul>
+<p>Running it again <b>updates</b> the program; your data is kept.</p>
+
+<h3 id="first-login">First login</h3>
+<p>On the first visit the admin panel asks for the language (English or Hungarian) and the first admin account. It also creates a default playlist with sample content (announcement, clock & weather, cards, calendar, interactive menu, feedback form, countdown), so a newly paired screen shows something immediately. You can delete or edit these freely.</p>
+
+<h3 id="env">Environment variables</h3>
+<p>The service reads these (set them in the systemd unit, or on the command line when running by hand):</p>
+<table>
+  <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+  <tr><td><code>PORT</code></td><td>8080</td><td>HTTP port.</td></tr>
+  <tr><td><code>HOST</code></td><td>0.0.0.0</td><td>Address to listen on. Use <code>127.0.0.1</code> behind a reverse proxy.</td></tr>
+  <tr><td><code>SIGNAGE_DATA</code></td><td><code>./data</code></td><td>Data folder (database + media).</td></tr>
+  <tr><td><code>MAX_UPLOAD_MB</code></td><td>2048</td><td>Maximum size of a single uploaded file.</td></tr>
+</table>
+
+<h3 id="https">HTTPS and reverse proxy</h3>
+<p>The server speaks plain HTTP. For HTTPS put a reverse proxy in front of it. With <a href="https://caddyserver.com">Caddy</a> (automatic certificates):</p>
+<pre><code>signage.example.com {
+  reverse_proxy localhost:8080
+}</code></pre>
+<p>With nginx, disable response buffering — the screens receive changes over Server-Sent Events:</p>
+<pre><code>location / {
+  proxy_pass http://127.0.0.1:8080;
+  proxy_buffering off;
+  proxy_read_timeout 1h;
+  proxy_set_header Host $host;
+}</code></pre>
+
+<h3 id="dev">Running without the installer</h3>
+<p>Any machine with Node.js ≥ 22.13 (macOS, Windows, Linux) can run the server directly — there are no dependencies to install:</p>
+<pre><code>cd server
+npm run dev</code></pre>
+</section>
+
+<section id="player">
+<h2>Display installation</h2>
+<p>On the device connected to the display, run one command. The admin panel shows it ready to copy under <b>Screens → New screen</b>.</p>
+<pre><code>curl -fsSL http://SERVER-IP:8080/install-player.sh | sudo bash</code></pre>
+<p>Options go after <code>-s --</code>, for example:</p>
+<pre><code>curl -fsSL http://SERVER-IP:8080/install-player.sh | sudo bash -s -- --nightly-reboot --rotate 90</code></pre>
+<table>
+  <tr><th>Option</th><th>Description</th></tr>
+  <tr><td><code>--nightly-reboot</code></td><td>Reboot the device every night at 04:30.</td></tr>
+  <tr><td><code>--rotate 90|180|270</code></td><td>Hardware screen rotation. (Software rotation can also be set per screen in the admin panel.)</td></tr>
+  <tr><td><code>--gpu</code> / <code>--no-gpu</code></td><td>Force GPU acceleration on or off. By default it is detected: software rendering in virtual machines and without a GPU.</td></tr>
+  <tr><td><code>--user NAME</code></td><td>Name of the kiosk user (default: <code>kiosk</code>).</td></tr>
+  <tr><td><code>--uninstall</code></td><td>Remove the player (kiosk user, autologin, scripts, boot screen).</td></tr>
+  <tr><td><code>--purge</code></td><td>Uninstall and also remove Chromium and the graphics packages.</td></tr>
+</table>
+<h3>What it sets up</h3>
+<ul>
+  <li>A minimal X11 environment with <b>no window manager and no desktop</b>, and Chromium in kiosk mode. Chromium is restarted automatically if it crashes.</li>
+  <li>Automatic login on tty1 with a dedicated <code>kiosk</code> user.</li>
+  <li>Screen saver and power saving off; the monitor is switched on and off according to the screen's power schedule (DPMS).</li>
+  <li>A <b>boot screen</b> with the logo and a progress bar instead of console text, also during restarts and shutdown (Plymouth, quiet GRUB).</li>
+  <li>The <code>signage-agent</code> service, so you can restart the player or reboot the device from the admin panel.</li>
+  <li>The <code>signage-diag</code> troubleshooting command.</li>
+</ul>
+<p>Settings are stored in <code>/etc/narancs-signage/player.conf</code> (server address, device ID, Chromium path, rotation, extra Chromium flags). After editing it, restart the player from the admin panel or reboot.</p>
+
+<h3 id="pairing">Pairing</h3>
+<p>After the reboot the display shows a <b>6-digit code</b> and the server address. In the admin panel open <b>Screens → New screen</b>, type the code, give the screen a name and pick a playlist. The screen starts playing within seconds. Unpaired devices that have not checked in for 24 hours are removed automatically.</p>
+
+<h3 id="browser-player">Without installing</h3>
+<p>Open <code>http://SERVER-IP:8080/player/</code> in any browser — a smart TV, a tablet in kiosk mode or a signage stick. It shows a pairing code just like an installed player. Remote restart/reboot and the monitor power schedule need the installed player; everything else works the same.</p>
+
+<h3 id="uninstall-player">Uninstall</h3>
+<pre><code>curl -fsSL http://SERVER-IP:8080/install-player.sh | sudo bash -s -- --uninstall</code></pre>
+<p>Afterwards delete the screen in the admin panel as well. To reinstall, simply run the install command again.</p>
+</section>
+
+<section id="admin">
+<h2>Admin panel</h2>
+<p>The admin panel works on desktop and mobile, in light or dark mode. Most changes reach the screens immediately after saving. In editors, <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>S</kbd> saves.</p>
+
+<h3 id="dashboard">Dashboard</h3>
+<p>Online screens, number of content items and playlists, touches and form submissions in the last 7 days, an activity chart, the most viewed content, recent submissions, active alerts and storage usage. Buttons to reload or identify all screens.</p>
+
+<h3 id="screens">Screens</h3>
+<p>Each paired screen is a card showing its status (online/offline), input mode (touch or mouse), what is playing right now, its playlist, resolution and last check-in. Turn on <b>Live preview</b> to see every screen's output live.</p>
+<p><b>Control</b> sends commands to the screen:</p>
+<table>
+  <tr><th>Command</th><th>Effect</th></tr>
+  <tr><td>Identify</td><td>Shows the screen's name in large text for a few seconds — handy to find which physical screen is which.</td></tr>
+  <tr><td>Previous / Next</td><td>Steps the playlist.</td></tr>
+  <tr><td>Reload</td><td>Reloads the player page (picks up player updates).</td></tr>
+  <tr><td>Clear cache</td><td>Deletes the offline cache and reloads.</td></tr>
+  <tr><td>Restart player</td><td>Restarts the Chromium kiosk (installed player only).</td></tr>
+  <tr><td>Reboot device</td><td>Reboots the whole device (installed player only).</td></tr>
+</table>
+<p><b>Edit</b> opens the screen settings in five tabs:</p>
+<table>
+  <tr><th>Tab</th><th>Settings</th></tr>
+  <tr><td>General</td><td>Name, default playlist, return to autoplay after touch (seconds of inactivity), virtual keyboard for forms, <b>tablet mode</b> (on: never show a mouse pointer, touch only; off: the pointer appears while the mouse moves and hides after 3 seconds).</td></tr>
+  <tr><td>Schedule</td><td>Rules that play a different playlist on given days, between given times and optionally between dates — e.g. breakfast menu 7–10 am, different content at weekends. Rules are evaluated in order; the first matching rule wins, otherwise the default playlist plays.</td></tr>
+  <tr><td>Look</td><td>Orientation (landscape, portrait 90°/270°, upside down — rotated in software), corner clock, progress bar, news ticker (one message per line) with speed and colour, a different theme for this screen, accent colour override.</td></tr>
+  <tr><td>Power</td><td>Scheduled screen off: on/off time and operating days. Outside these hours the screen is black; on an installed player the monitor itself is switched off.</td></tr>
+  <tr><td>Device</td><td>Device ID, resolution, platform, browser, language, uptime, offline cache and remote agent status, pairing date; clear cache, restart, delete.</td></tr>
+</table>
+
+<h3 id="playlists">Playlists</h3>
+<p>A playlist is an ordered list of content items. Drag rows to reorder them. For each item you can set:</p>
+<ul>
+  <li><b>duration</b> in seconds (empty = the content's own duration),</li>
+  <li>an <b>on/off switch</b> to skip it temporarily,</li>
+  <li><b>validity dates</b> (from / to) — e.g. a promotion that disappears automatically.</li>
+</ul>
+<p>The transition between items can be fade, slide in, zoom, float up or none. The live preview on the right plays the saved playlist exactly as the screens do.</p>
+
+<h3 id="content">Content types</h3>
+<p>Under <b>Content</b> you create items once and use them in any number of playlists. Every editor has a live preview. Text and colours can follow the branding: colour fields offer the theme's colours, and <b>Apply branding</b> (in the content editor, or for all content at once on the Branding page) replaces custom colours with the theme's colours, so the content follows later theme changes too.</p>
+<table>
+  <tr><th>Type</th><th>Main options</th></tr>
+  <tr><td>🖼️ Image slideshow</td><td>Images and videos from the media library, interval, effect (fade, slide, Ken Burns), fit (cover/contain with a blurred background), captions, page dots. Duration 0 = number of images × interval.</td></tr>
+  <tr><td>🎬 Video</td><td>Video file, muted or with sound, fit. Duration 0 = play to the end.</td></tr>
+  <tr><td>📝 Announcement</td><td>Kicker, title, body text, alignment, text size, background colour, gradient, image or video, logo.</td></tr>
+  <tr><td>🃏 Cards</td><td>Title, subtitle, number of columns, cards with icon or image, title, text, badge; a card can open another content item when tapped.</td></tr>
+  <tr><td>👆 Interactive menu</td><td>Touch buttons with icon, label and subtitle that open other content. Back/Home buttons appear automatically; after the inactivity time the screen returns to the playlist.</td></tr>
+  <tr><td>📋 Form</td><td>Shows one of your forms (see <a href="#forms">Forms</a>).</td></tr>
+  <tr><td>📅 Calendar</td><td>Calendars to show, view (list, week, month), days ahead, maximum number of events.</td></tr>
+  <tr><td>🕒 Clock &amp; weather</td><td>Digital or analogue clock, seconds, date, current weather and 5-day forecast for a city (Open-Meteo, no API key), title.</td></tr>
+  <tr><td>📰 News feed</td><td>RSS/Atom URL, number of items, seconds per item, images.</td></tr>
+  <tr><td>⏳ Countdown</td><td>Title, target date and time, text shown when it is reached, background.</td></tr>
+  <tr><td>🔳 QR code</td><td>URL or text (Wi-Fi login, menu, website), title, caption. Generated on the screen, no internet needed.</td></tr>
+  <tr><td>🌐 Website</td><td>URL, zoom, interactive or display-only, timed reload. Some sites (Google, Facebook…) block embedding.</td></tr>
+  <tr><td>📄 PDF</td><td>A PDF from the media library and the page to show.</td></tr>
+  <tr><td>🧩 Custom HTML</td><td>Your own HTML/CSS/JS, running in an isolated frame.</td></tr>
+</table>
+<p>From a content item you can open its full-screen preview, duplicate it, or see which playlists use it before deleting.</p>
+
+<h3 id="media">Media library</h3>
+<p>Upload images (JPG, PNG, WebP, GIF), videos (MP4, WebM) and PDFs by drag and drop. The maximum file size is 2 GB by default (<code>MAX_UPLOAD_MB</code>). Each file has a direct link; the players download and cache them for offline use.</p>
+
+<h3 id="calendars">Calendars</h3>
+<p>Create calendars with a colour (a theme colour or one of the predefined colours) and add events by hand, or import a Google / Outlook / any iCal (<code>.ics</code>) link. Imported calendars refresh every 15 minutes, or immediately with <b>Refresh</b>. All-day events are supported. Recurring events (RRULE) are not expanded — only the first occurrence is shown.</p>
+
+<h3 id="forms">Forms</h3>
+<p>Build touch-screen forms for surveys, sign-ups or guest registration. Start from a template (satisfaction survey, contact request, guest registration) or from scratch.</p>
+<p>Field types: short text, long text, e-mail, phone number, number, drop-down, choice buttons, checkbox, star rating, satisfaction smileys. Each field can be required. On the screen a virtual keyboard (English or Hungarian layout) appears for text fields if enabled for the screen.</p>
+<p>Submissions appear under the form, with the screen they came from; export them as <b>CSV</b>.</p>
+
+<h3 id="branding">Branding</h3>
+<ol>
+  <li><b>Theme</b> — 10 built-in themes (Orange, Ocean, Forest, Midnight purple, Burgundy, Black &amp; gold, Neon, Clean light, Corporate blue, Pastel). Each sets colours, fonts and corner rounding; you can then override any colour, the text and heading fonts and the rounding.</li>
+  <li><b>Organisation, logo and titles</b> — organisation name, slogan, logo (transparent PNG or SVG recommended), logo watermark in a corner with size and opacity.</li>
+  <li><b>Header bar</b> — logo, title, subtitle and clock at the top of every screen, above all content.</li>
+  <li><b>Colour the content</b> — new content uses the theme colours by default; <b>Apply branding to all content</b> converts older content with custom colours. Images and videos are not changed.</li>
+</ol>
+<p>Changes show immediately in the preview and reach the screens after saving. A screen can use a different theme (<b>Screens → Edit → Look</b>); the logo and header stay global.</p>
+
+<h3 id="alerts">Emergency alerts</h3>
+<p>Show an instant full-screen message on all screens or selected ones. Set a title, message, level (info, warning, danger, success) and an expiry in minutes (or none). Templates: fire alarm, evacuation, short break, congratulations. Active alerts are listed with a button to end them; screens show the alert until it expires or is ended.</p>
+
+<h3 id="settings">Settings and users</h3>
+<ul>
+  <li><b>Language</b> of the admin panel, the screens and the server messages (English or Hungarian).</li>
+  <li><b>Password</b> change and <b>users</b>: every user is a full administrator.</li>
+  <li><b>Sample content</b>: recreate the default sample playlist.</li>
+  <li><b>System and backup</b>: data folder, uptime, player address, database download, reload all screens.</li>
+</ul>
+</section>
+
+<section id="display">
+<h2>On the display</h2>
+<ul>
+  <li><b>Startup</b>: boot screen with progress bar → loading screen → content. If the server cannot be reached, a status screen explains why and keeps retrying.</li>
+  <li><b>Offline</b>: the configuration and all media are cached. If the server or the network goes down, the screen keeps playing and shows a small “Offline – cached content” label.</li>
+  <li><b>Real-time updates</b>: saved changes, alerts and commands arrive within seconds over Server-Sent Events.</li>
+  <li><b>Touch</b>: interactive content (menus, cards, forms) reacts to touch; after the inactivity time set for the screen, playback continues.</li>
+  <li><b>Mouse</b>: in non-tablet mode the pointer is visible while the mouse moves and hides after 3 seconds.</li>
+  <li><b>Keyboard</b>: <kbd>→</kbd> next, <kbd>←</kbd> previous, <kbd>I</kbd> identify.</li>
+  <li><b>Statistics</b>: views and touches are reported to the dashboard.</li>
+</ul>
+</section>
+
+<section id="operations">
+<h2>Operations</h2>
+<table>
+  <tr><th>Task</th><th>Command</th></tr>
+  <tr><td>Status</td><td><code>systemctl status narancs-signage</code></td></tr>
+  <tr><td>Logs</td><td><code>journalctl -u narancs-signage -f</code></td></tr>
+  <tr><td>Restart</td><td><code>sudo systemctl restart narancs-signage</code></td></tr>
+  <tr><td>Manual backup</td><td><code>sudo signage-backup</code></td></tr>
+  <tr><td>Update</td><td><code>git pull &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
+  <tr><td>Install a specific version</td><td><code>git checkout v1.9.7 &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
+  <tr><td>Data</td><td><code>/var/lib/narancs-signage</code> (<code>signage.db</code> + <code>media/</code>)</td></tr>
+</table>
+
+<h3 id="backup">Backup and restore</h3>
+<p>Every night at 03:00 <code>signage-backup</code> writes a complete backup (database snapshot + media) to <code>/var/backups/narancs-signage/signage-DATE.tar.gz</code> and keeps the last 14. The admin panel can also download the database alone.</p>
+<p>To restore a backup:</p>
+<pre><code>sudo systemctl stop narancs-signage
+cd /var/lib/narancs-signage
+sudo rm -f signage.db signage.db-wal signage.db-shm
+sudo tar -xzf /var/backups/narancs-signage/signage-20261010-030000.tar.gz
+sudo mv backup-20261010-030000.db signage.db
+sudo chown -R signage: /var/lib/narancs-signage
+sudo systemctl start narancs-signage</code></pre>
+
+<h3 id="updates">Updating the displays</h3>
+<p>Player (browser) changes reach the screens with a <b>Reload</b> command from the admin panel. Changes to the kiosk itself (boot screen, agent, Chromium flags) need the player installer to be run again on the device; it keeps the device ID and pairing.</p>
+</section>
+
+<section id="troubleshooting">
+<h2>Troubleshooting</h2>
+<p>On a display, <code>sudo signage-diag</code> prints the server address, device ID, whether the server is reachable, the pairing state, the graphics setup and the last lines of the X log. The same report can be requested remotely with the <code>diag</code> command of the API; the result is stored in the screen's <code>info.diag</code> field.</p>
+<dl class="faq">
+  <dt>The display shows no pairing code</dt>
+  <dd>Check the network and the server address with <code>sudo signage-diag</code>. The player keeps retrying and shows a status screen after a few failed attempts. If the server address is wrong, run the installer again with the right address.</dd>
+  <dt>Black or single-colour screen in a virtual machine</dt>
+  <dd>3D acceleration in some VMs (e.g. virgl in UTM/QEMU) does not reach the display. The installer detects VMs and uses software rendering; you can force it with <code>--no-gpu</code>.</dd>
+  <dt>The screen is “Offline” in the admin panel</dt>
+  <dd>The device has not checked in for 90 seconds. It still plays cached content. Check its network and power; when it reconnects, it updates automatically.</dd>
+  <dt>A website does not appear</dt>
+  <dd>Many sites forbid being embedded in a frame (X-Frame-Options / CSP). Use a page that allows embedding, a dashboard's “kiosk” or “embed” link, or a screenshot.</dd>
+  <dt>Video plays without sound</dt>
+  <dd>The installed player allows autoplay with sound. In a regular browser the browser may mute it until someone interacts with the page.</dd>
+  <dt>The mouse pointer never appears</dt>
+  <dd>Tablet mode is on for the screen (<b>Screens → Edit → General</b>). Turn it off to show the pointer while the mouse moves.</dd>
+  <dt>Emojis look like outlines</dt>
+  <dd>The player puts every emoji in a colour emoji font. Re-run the player installer so the font package is installed.</dd>
+  <dt>I forgot the admin password</dt>
+  <dd>Another admin can create a new user for you. If you are the only admin, restore an older backup or ask for help in a GitHub issue.</dd>
+</dl>
+</section>
+
+<section id="api">
+<h2>API reference</h2>
+<p>The admin panel uses a JSON REST API. Authentication is a session cookie (<code>POST /api/auth/login</code>); state-changing requests must also send the header <code>X-Signage: 1</code> (CSRF protection). Errors return <code>{ "error": "message" }</code> with a 4xx/5xx status.</p>
+<table>
+  <tr><th>Endpoint</th><th>Description</th></tr>
+  <tr><td><code>POST /api/auth/login</code> · <code>/logout</code> · <code>GET /api/auth/state</code></td><td>Sign in / out, current user.</td></tr>
+  <tr><td><code>GET|POST /api/slides</code> · <code>GET|PUT|DELETE /api/slides/:id</code></td><td>Content items. Also <code>POST /api/slides/:id/duplicate</code>, <code>GET /api/slides/:id/usage</code>.</td></tr>
+  <tr><td><code>/api/playlists</code>, <code>/api/calendars</code>, <code>/api/forms</code></td><td>Same CRUD pattern.</td></tr>
+  <tr><td><code>GET|POST /api/events</code> · <code>PUT|DELETE /api/events/:id</code></td><td>Calendar events (<code>?calendar_id=</code>).</td></tr>
+  <tr><td><code>GET|POST /api/media</code> · <code>PUT|DELETE /api/media/:id</code></td><td>Media library; upload with the raw file as body and the <code>X-Filename</code> header.</td></tr>
+  <tr><td><code>GET /api/screens</code> · <code>PUT|DELETE /api/screens/:id</code></td><td>Screens and pending devices.</td></tr>
+  <tr><td><code>POST /api/screens/pair</code></td><td>Pair a device: <code>{ code, name, playlist_id }</code>.</td></tr>
+  <tr><td><code>POST /api/screens/:id/command</code> · <code>POST /api/screens/broadcast</code></td><td>Commands: <code>identify</code>, <code>prev</code>, <code>next</code>, <code>reload</code>, <code>clear-cache</code>, <code>diag</code>, <code>restart</code>, <code>reboot</code>.</td></tr>
+  <tr><td><code>GET|POST /api/alerts</code> · <code>DELETE /api/alerts/:id</code></td><td>Emergency alerts: <code>{ title, message, level, screen_ids, minutes }</code>.</td></tr>
+  <tr><td><code>GET /api/forms/:id/submissions</code> · <code>GET /api/forms/:id/export.csv</code></td><td>Form submissions.</td></tr>
+  <tr><td><code>GET|PUT /api/settings</code> · <code>GET /api/dashboard</code> · <code>GET /api/backup</code></td><td>Settings, dashboard data, database download.</td></tr>
+</table>
+<p>The player uses the public <code>/api/player/*</code> endpoints (hello, config, stream, heartbeat, forms, weather, rss), identified by its device ID.</p>
+</section>
+
+<section id="faq">
+<h2>FAQ and license</h2>
+<dl class="faq">
+  <dt>Is it free?</dt>
+  <dd>Yes. You may use, modify and share it free of charge, also for business purposes. Only the author may sell the software; charging for installation, operation or content creation is allowed. Keep the license file and the copyright notice in the admin panel. See the <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE">Narancs Signage License</a>.</dd>
+  <dt>Does it need the cloud or an account?</dt>
+  <dd>No. Everything runs on your own server; only the weather, RSS and iCal features fetch data from the internet.</dd>
+  <dt>How many screens can it handle?</dt>
+  <dd>The server is lightweight; dozens of screens on a small machine are no problem. Media are cached on the screens, so traffic is mostly small updates.</dd>
+  <dt>Where can I report a bug or ask for a feature?</dt>
+  <dd>Open an issue on <a href="https://github.com/mzzg-bazsi/narancs-signage/issues">GitHub</a>. The changes of each version are listed in the <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/CHANGELOG.md">changelog</a>.</dd>
+</dl>
+</section>
+
+</article>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation · Narancs Signage</title>
+<meta name="description" content="Install, run and use Narancs Signage: server and player installation, admin panel guide, content types, operations, troubleshooting and API reference.">
+<link rel="alternate" hreflang="en" href="https://mzzg-bazsi.github.io/narancs-signage-website/docs/">
+<link rel="alternate" hreflang="hu" href="https://mzzg-bazsi.github.io/narancs-signage-website/docs/?lang=hu">
+<link rel="alternate" hreflang="x-default" href="https://mzzg-bazsi.github.io/narancs-signage-website/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Narancs Signage">
+<meta property="og:title" content="Documentation · Narancs Signage">
+<meta property="og:description" content="Install, run and use Narancs Signage: server and player installation, admin panel guide, content types, operations, troubleshooting and API reference.">
+<meta property="og:url" content="https://mzzg-bazsi.github.io/narancs-signage-website/docs/">
+<meta property="og:image" content="https://mzzg-bazsi.github.io/narancs-signage-website/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="../"><img src="../assets/favicon.svg" alt="" width="30" height="30"> Narancs Signage</a>
+  <nav>
+    <a href="../#features">Features</a>
+    <a href="../#install">Install</a>
+    <a href="../demo/">Live demo</a>
+    <a href="./" aria-current="page">Docs</a>
+    <span class="lang-switch"><button data-lang="en">EN</button><button data-lang="hu">HU</button></span>
+    <a class="btn btn-sm" href="https://github.com/mzzg-bazsi/narancs-signage">GitHub</a>
+  </nav>
+</header>
+
+<div class="docs">
+  <aside class="toc">
+    <details open id="tocBox">
+      <summary>Contents</summary>
+      <nav id="toc" aria-label="Contents"></nav>
+    </details>
+  </aside>
+  <main id="docBody" aria-live="polite">
+    <noscript><p><a href="en.html">English documentation</a> · <a href="hu.html">Magyar dokumentáció</a></p></noscript>
+  </main>
+</div>
+
+<footer>
+  <img src="../assets/favicon.svg" alt="" width="24" height="24">
+  <span data-i18n>© 2026 Balázs Mazzag · <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE">Narancs Signage License</a> · free to use, modify and share</span>
+</footer>
+
+<script src="../i18n.js"></script>
+<script>
+// A dokumentáció szövege nyelvenként külön fájlban van (en.html / hu.html); a tartalomjegyzék a címsorokból készül
+(async () => {
+  const body = document.getElementById('docBody'), toc = document.getElementById('toc');
+  body.innerHTML = await (await fetch(`${SITE_LANG}.html`)).text();
+
+  const items = [...body.querySelectorAll('section[id] > h1, section[id] > h2, h3[id]')].map((h) => {
+    const id = h.id || h.parentElement.id;
+    const a = document.createElement('a');
+    a.href = '#' + id; a.textContent = h.textContent;
+    if (h.tagName === 'H3') a.className = 'toc-sub';
+    toc.append(a);
+    return { a, el: h.id ? h : h.parentElement };
+  });
+
+  // aktív szakasz kiemelése görgetéskor
+  const spy = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) {
+      items.forEach((it) => it.a.classList.toggle('on', it.el === e.target));
+    }
+  }, { rootMargin: '-80px 0px -70% 0px' });
+  items.forEach((it) => spy.observe(it.el));
+  // mobilon a tartalomjegyzék csukva indul, és kattintás után becsukódik
+  const box = document.getElementById('tocBox');
+  if (matchMedia('(max-width: 900px)').matches) box.open = false;
+  toc.addEventListener('click', () => { if (matchMedia('(max-width: 900px)').matches) box.open = false; });
+
+  // másolás gomb a kódblokkokhoz (a diagram kivételével)
+  for (const pre of body.querySelectorAll('pre:not(.diagram)')) {
+    const b = document.createElement('button');
+    b.className = 'copy'; b.textContent = t('Copy');
+    b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(pre.querySelector("code").textContent); b.textContent = t('Copied'); } catch { b.textContent = t('Select & copy'); }
+      setTimeout(() => { b.textContent = t('Copy'); }, 1600);
+    });
+    pre.classList.add('has-copy'); pre.append(b);
+  }
+
+  if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+})();
+</script>
+</body>
+</html>

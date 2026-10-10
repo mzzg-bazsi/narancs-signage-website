@@ -1,0 +1,321 @@
+<article class="doc" lang="hu">
+
+<section id="intro">
+<h1>Narancs Signage dokumentáció</h1>
+<p class="doc-lead">Minden, ami a Narancs Signage telepítéséhez, üzemeltetéséhez és használatához kell. A Narancs Signage egy teljes, saját szerveren futó digitális kijelzőrendszer.</p>
+<p>A rendszer három részből áll:</p>
+<ul>
+  <li><b>Szerver</b>: kis Node.js program SQLite adatbázissal. Ez szolgálja ki az admin felületet, tárolja a tartalmakat és a médiafájlokat, és valós időben küldi a változásokat a kijelzőknek.</li>
+  <li><b>Admin felület</b>: webes alkalmazás a <code>/admin/</code> címen, itt kezeled a képernyőket, lejátszási listákat, tartalmakat, az arculatot és a vészjelzéseket.</li>
+  <li><b>Lejátszó</b>: webes alkalmazás a <code>/player/</code> címen, teljes képernyőn fut minden kijelzőn. A lejátszó telepítője bármelyik Ubuntu Servert vagy Raspberry Pi-t lezárt kioszkká alakítja, ami ezt futtatja.</li>
+</ul>
+<pre class="diagram">┌─────────────────────────┐   HTTP + SSE (valós idejű)      ┌──────────────────────────┐
+│ Szerver (Ubuntu)        │ ◄─────────────────────────────► │ Kijelző (ARM / x86)      │
+│ Node.js, SQLite         │                                 │ Chromium kioszk          │
+│ /admin   admin felület  │                                 │ /player  lejátszó        │
+│ /player  lejátszó       │                                 │ offline gyorsítótár      │
+└─────────────────────────┘                                 └──────────────────────────┘</pre>
+<h3>Követelmények</h3>
+<table>
+  <tr><th>Rész</th><th>Követelmény</th></tr>
+  <tr><td>Szerver</td><td>Ubuntu Server 22.04 / 24.04 (amd64 vagy arm64). Több tucat kijelzőhöz is elég 1 processzormag és 1 GB RAM; a tárhely a médiafájlok méretétől függ. Node.js ≥ 22.13 (a telepítő a Node.js 24-et teszi fel).</td></tr>
+  <tr><td>Kijelző</td><td>Ubuntu Server 22.04 / 24.04 vagy Raspberry Pi OS Lite (arm64, armhf, amd64). Raspberry Pi 4/5 vagy bármilyen mini PC, HDMI-n csatlakozó monitor vagy tévé; interaktív tartalmakhoz érintőképernyő.</td></tr>
+  <tr><td>Hálózat</td><td>A kijelzőknek HTTP-n el kell érniük a szervert (alapból a 8080-as porton). Az időjáráshoz, az RSS-hez és az iCal naptárakhoz a szervernek internet kell.</td></tr>
+  <tr><td>Csak böngésző</td><td>Bármely modern böngésző megnyithatja a <code>/player/</code> címet telepítés nélkül (okostévé, tablet, signage stick).</td></tr>
+</table>
+</section>
+
+<section id="quickstart">
+<h2>Gyors kezdés</h2>
+<ol class="steps-list">
+  <li><b>Telepítsd a szervert</b> egy Ubuntus gépre:
+<pre><code>git clone https://github.com/mzzg-bazsi/narancs-signage.git
+cd narancs-signage
+sudo ./install/install-server.sh</code></pre></li>
+  <li><b>Nyisd meg az admin felületet</b> a telepítő által kiírt címen (<code>http://SZERVER-IP:8080/admin/</code>), válassz nyelvet, és hozd létre az admin fiókot. Egy alap lejátszási lista minta tartalmakkal automatikusan létrejön.</li>
+  <li><b>Telepítsd a lejátszót</b> minden kijelző gépre:
+<pre><code>curl -fsSL http://SZERVER-IP:8080/install-player.sh | sudo bash</code></pre></li>
+  <li><b>Indítsd újra a kijelzőt.</b> Megjelenik rajta egy 6 jegyű párosító kód.</li>
+  <li><b>Párosítsd</b> az admin felületen a <b>Képernyők → Új képernyő</b> menüben. A képernyő azonnal elkezdi játszani az alap listát.</li>
+</ol>
+<p class="note">Minden egy gépen? Előbb a szervert telepítsd, utána ugyanarra a gépre a lejátszót, <code>http://localhost:8080</code> címmel.</p>
+</section>
+
+<section id="server">
+<h2>A szerver telepítése</h2>
+<p>A telepítőt a letöltött projekt mappájából futtasd:</p>
+<pre><code>sudo ./install/install-server.sh [--port 8080] [--data /var/lib/narancs-signage]</code></pre>
+<table>
+  <tr><th>Kapcsoló</th><th>Alapérték</th><th>Leírás</th></tr>
+  <tr><td><code>--port</code></td><td>8080</td><td>A szerver HTTP portja.</td></tr>
+  <tr><td><code>--data</code></td><td><code>/var/lib/narancs-signage</code></td><td>Az adatbázis és a médiafájlok helye.</td></tr>
+</table>
+<p>A telepítő:</p>
+<ul>
+  <li>feltelepíti a Node.js 24-et a NodeSource-ból, ha nincs megfelelő verzió,</li>
+  <li>a programot a <code>/opt/narancs-signage</code> mappába másolja, és létrehoz egy <code>signage</code> rendszerfelhasználót,</li>
+  <li>létrehozza és elindítja a <code>narancs-signage</code> systemd szolgáltatást,</li>
+  <li>telepíti a <code>signage-backup</code> parancsot és a napi mentést hajnali 3-kor,</li>
+  <li>megnyitja a portot a tűzfalon, ha az <code>ufw</code> aktív.</li>
+</ul>
+<p>Újrafuttatva <b>frissíti</b> a programot, az adatok megmaradnak.</p>
+
+<h3 id="first-login">Első belépés</h3>
+<p>Az első megnyitáskor az admin felület megkérdezi a nyelvet (angol vagy magyar), és létrehozod az első admin fiókot. Ekkor egy alap lejátszási lista is készül minta tartalmakkal (hirdetmény, óra és időjárás, kártyák, naptár, interaktív menü, elégedettségi kérdőív, visszaszámlálás), így egy frissen párosított képernyőn rögtön látszik valami. Ezeket szabadon szerkesztheted vagy törölheted.</p>
+
+<h3 id="env">Környezeti változók</h3>
+<p>A szolgáltatás ezeket olvassa (a systemd unitban, vagy kézi indításnál a parancssorban adhatók meg):</p>
+<table>
+  <tr><th>Változó</th><th>Alapérték</th><th>Leírás</th></tr>
+  <tr><td><code>PORT</code></td><td>8080</td><td>HTTP port.</td></tr>
+  <tr><td><code>HOST</code></td><td>0.0.0.0</td><td>Melyik címen figyeljen. Fordított proxy mögött: <code>127.0.0.1</code>.</td></tr>
+  <tr><td><code>SIGNAGE_DATA</code></td><td><code>./data</code></td><td>Adatkönyvtár (adatbázis + média).</td></tr>
+  <tr><td><code>MAX_UPLOAD_MB</code></td><td>2048</td><td>Egy feltöltött fájl legnagyobb mérete.</td></tr>
+</table>
+
+<h3 id="https">HTTPS és fordított proxy</h3>
+<p>A szerver sima HTTP-t beszél. HTTPS-hez tegyél elé egy fordított proxyt. <a href="https://caddyserver.com">Caddy</a>-vel (automatikus tanúsítvánnyal):</p>
+<pre><code>signage.example.com {
+  reverse_proxy localhost:8080
+}</code></pre>
+<p>nginx esetén kapcsold ki a válasz pufferelést, mert a kijelzők Server-Sent Events kapcsolaton kapják a változásokat:</p>
+<pre><code>location / {
+  proxy_pass http://127.0.0.1:8080;
+  proxy_buffering off;
+  proxy_read_timeout 1h;
+  proxy_set_header Host $host;
+}</code></pre>
+
+<h3 id="dev">Futtatás telepítő nélkül</h3>
+<p>Bármely gépen, ahol van Node.js ≥ 22.13 (macOS, Windows, Linux), közvetlenül is futtatható; nincs telepítendő függőség:</p>
+<pre><code>cd server
+npm run dev</code></pre>
+</section>
+
+<section id="player">
+<h2>A kijelző telepítése</h2>
+<p>A kijelzőhöz csatlakoztatott gépen egyetlen parancsot kell futtatni. Az admin felület a <b>Képernyők → Új képernyő</b> menüben másolható formában mutatja.</p>
+<pre><code>curl -fsSL http://SZERVER-IP:8080/install-player.sh | sudo bash</code></pre>
+<p>A kapcsolók a <code>-s --</code> után jönnek, például:</p>
+<pre><code>curl -fsSL http://SZERVER-IP:8080/install-player.sh | sudo bash -s -- --nightly-reboot --rotate 90</code></pre>
+<table>
+  <tr><th>Kapcsoló</th><th>Leírás</th></tr>
+  <tr><td><code>--nightly-reboot</code></td><td>Az eszköz minden éjjel 4:30-kor újraindul.</td></tr>
+  <tr><td><code>--rotate 90|180|270</code></td><td>Hardveres képforgatás. (Szoftveres forgatás képernyőnként az admin felületen is állítható.)</td></tr>
+  <tr><td><code>--gpu</code> / <code>--no-gpu</code></td><td>A grafikus gyorsítás kényszerített be- vagy kikapcsolása. Alapból automatikus: virtuális gépen és GPU nélkül szoftveres megjelenítés.</td></tr>
+  <tr><td><code>--user NÉV</code></td><td>A kioszk felhasználó neve (alap: <code>kiosk</code>).</td></tr>
+  <tr><td><code>--uninstall</code></td><td>A lejátszó eltávolítása (kioszk felhasználó, automatikus belépés, szkriptek, bootkép).</td></tr>
+  <tr><td><code>--purge</code></td><td>Eltávolítás a Chromiummal és a grafikus csomagokkal együtt.</td></tr>
+</table>
+<h3>Mit állít be?</h3>
+<ul>
+  <li>Minimális X11 környezetet <b>ablakkezelő és asztal nélkül</b>, és kioszk módú Chromiumot. Ha a Chromium összeomlik, magától újraindul.</li>
+  <li>Automatikus belépést a tty1-en egy külön <code>kiosk</code> felhasználóval.</li>
+  <li>Kikapcsolja a képernyővédőt és az energiatakarékosságot; a monitort a képernyő be/kikapcsolási ütemezése szerint kapcsolja (DPMS).</li>
+  <li><b>Bootképet</b> logóval és folyamatjelzővel a konzolszöveg helyett, újraindításkor és leállításkor is (Plymouth, csendes GRUB).</li>
+  <li>A <code>signage-agent</code> szolgáltatást, amivel az admin felületről újraindítható a lejátszó vagy az egész eszköz.</li>
+  <li>A <code>signage-diag</code> hibakereső parancsot.</li>
+</ul>
+<p>A beállítások a <code>/etc/narancs-signage/player.conf</code> fájlban vannak (szervercím, eszközazonosító, Chromium útvonala, forgatás, extra Chromium kapcsolók). Módosítás után indítsd újra a lejátszót az admin felületről, vagy indítsd újra az eszközt.</p>
+
+<h3 id="pairing">Párosítás</h3>
+<p>Újraindítás után a kijelzőn megjelenik egy <b>6 jegyű kód</b> és a szerver címe. Az admin felületen nyisd meg a <b>Képernyők → Új képernyő</b> menüt, írd be a kódot, adj nevet a képernyőnek, és válassz lejátszási listát. A képernyő néhány másodpercen belül elindul. A 24 órája nem jelentkező, párosítatlan eszközök automatikusan törlődnek.</p>
+
+<h3 id="browser-player">Telepítés nélkül</h3>
+<p>Nyisd meg a <code>http://SZERVER-IP:8080/player/</code> címet bármely böngészőben (okostévé, kioszk módú tablet, signage stick). Ugyanúgy párosító kódot mutat, mint a telepített lejátszó. A távoli újraindításhoz és a monitor időzített kikapcsolásához telepített lejátszó kell, minden más ugyanígy működik.</p>
+
+<h3 id="uninstall-player">Eltávolítás</h3>
+<pre><code>curl -fsSL http://SZERVER-IP:8080/install-player.sh | sudo bash -s -- --uninstall</code></pre>
+<p>Utána az admin felületen is töröld a képernyőt. Újratelepítéshez egyszerűen futtasd újra a telepítő parancsot.</p>
+</section>
+
+<section id="admin">
+<h2>Az admin felület</h2>
+<p>Az admin felület asztali gépen és mobilon is működik, világos és sötét módban. A legtöbb változás mentés után azonnal megjelenik a képernyőkön. A szerkesztőkben a <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>S</kbd> ment.</p>
+
+<h3 id="dashboard">Irányítópult</h3>
+<p>Online képernyők, tartalmak és listák száma, az elmúlt 7 nap érintései és űrlap beküldései, aktivitás grafikon, a legnézettebb tartalmak, a legutóbbi beküldések, az aktív vészjelzések és a tárhely. Gombok az összes képernyő újratöltéséhez és azonosításához.</p>
+
+<h3 id="screens">Képernyők</h3>
+<p>Minden párosított képernyő egy kártya: állapot (online/offline), beviteli mód (érintés vagy egér), mi játszik éppen, lejátszási lista, felbontás, utolsó jelentkezés. Az <b>Élő előnézet</b> kapcsolóval minden képernyő képe élőben látszik.</p>
+<p>A <b>Vezérlés</b> parancsokat küld a képernyőnek:</p>
+<table>
+  <tr><th>Parancs</th><th>Hatás</th></tr>
+  <tr><td>Azonosítás</td><td>Néhány másodpercre nagy betűkkel kiírja a képernyő nevét, így megtalálod, melyik fizikai kijelző melyik.</td></tr>
+  <tr><td>Előző / Következő</td><td>Lépteti a lejátszási listát.</td></tr>
+  <tr><td>Újratöltés</td><td>Újratölti a lejátszó oldalt (a lejátszó frissítései így jutnak ki).</td></tr>
+  <tr><td>Gyorsítótár ürítése</td><td>Törli az offline gyorsítótárat és újratölt.</td></tr>
+  <tr><td>Lejátszó újraindítása</td><td>Újraindítja a Chromium kioszkot (csak telepített lejátszón).</td></tr>
+  <tr><td>Eszköz újraindítása</td><td>Az egész gépet újraindítja (csak telepített lejátszón).</td></tr>
+</table>
+<p>A <b>Szerkesztés</b> öt fülön nyitja meg a képernyő beállításait:</p>
+<table>
+  <tr><th>Fül</th><th>Beállítások</th></tr>
+  <tr><td>Általános</td><td>Név, alapértelmezett lejátszási lista, visszatérés érintés után (tétlenségi idő másodpercben), virtuális billentyűzet űrlapokhoz, <b>tablet mód</b> (bekapcsolva soha nincs egérmutató, csak érinteni lehet; kikapcsolva egér mozgatásakor látszik a mutató, és 3 másodperc után eltűnik).</td></tr>
+  <tr><td>Ütemezés</td><td>Szabályok, amik adott napokon, időszakban, és ha kell, dátumok között más listát játszanak. Például reggel 7–10 között reggeli menü, hétvégén más tartalom. A szabályok sorrendben értékelődnek ki: az első érvényes szabály listája fut, ha egyik sem, akkor az alapértelmezett.</td></tr>
+  <tr><td>Megjelenés</td><td>Tájolás (fekvő, álló 90°/270°, fejjel lefelé; szoftveres forgatás), óra a sarokban, folyamatjelző csík, hírszalag (soronként egy üzenet) sebességgel és színnel, eltérő téma erre a képernyőre, kiemelő szín felülírása.</td></tr>
+  <tr><td>Be/kikapcsolás</td><td>Időzített képernyő kikapcsolás: be- és kikapcsolási idő, üzemnapok. Üzemidőn kívül fekete kép; telepített lejátszón magát a monitort is kikapcsolja.</td></tr>
+  <tr><td>Eszköz</td><td>Eszközazonosító, felbontás, platform, böngésző, nyelv, futásidő, offline gyorsítótár és távvezérlő ügynök állapota, párosítás ideje; gyorsítótár ürítése, újraindítás, törlés.</td></tr>
+</table>
+
+<h3 id="playlists">Lejátszási listák</h3>
+<p>A lejátszási lista tartalmak sorrendje. A sorokat húzással rendezheted. Minden elemnél beállítható:</p>
+<ul>
+  <li>a <b>megjelenési idő</b> másodpercben (üresen: a tartalom saját ideje),</li>
+  <li>egy <b>be/ki kapcsoló</b> az ideiglenes kihagyáshoz,</li>
+  <li><b>érvényességi dátumok</b> (-tól, -ig), például egy akció, ami magától eltűnik.</li>
+</ul>
+<p>Az elemek közötti áttűnés lehet áttűnés, becsúszás, nagyítás, felúszás vagy semmi. A jobb oldali élő előnézet pontosan úgy játssza a mentett listát, ahogy a képernyők.</p>
+
+<h3 id="content">Tartalomtípusok</h3>
+<p>A <b>Tartalmak</b> menüben egyszer hozod létre az elemeket, és bármennyi listában használhatod őket. Minden szerkesztőben van élő előnézet. A szövegek és színek követhetik az arculatot: a színmezők felkínálják a téma színeit, az <b>Arculat szerint</b> gomb (a tartalom szerkesztőjében, vagy az összes tartalomra egyszerre az Arculat oldalon) pedig a tartalom egyedi színeit a téma színeire cseréli, így később témát váltva is követi azt.</p>
+<table>
+  <tr><th>Típus</th><th>Fő beállítások</th></tr>
+  <tr><td>🖼️ Képváltó</td><td>Képek és videók a médiatárból, váltási idő, effekt (áttűnés, csúsztatás, Ken Burns), illesztés (kitöltés vagy teljes kép elmosott háttérrel), feliratok, lapozó pontok. 0 mp megjelenési idő = képek száma × váltási idő.</td></tr>
+  <tr><td>🎬 Videó</td><td>Videófájl, némítva vagy hanggal, illesztés. 0 mp = a videó végéig.</td></tr>
+  <tr><td>📝 Hirdetmény</td><td>Felső felirat, cím, szöveg, igazítás, betűméret, háttérszín, színátmenet, háttérkép vagy -videó, logó.</td></tr>
+  <tr><td>🃏 Kártyák</td><td>Cím, alcím, oszlopok száma, kártyák ikonnal vagy képpel, címmel, szöveggel, címkével; érintésre egy kártya másik tartalmat nyithat meg.</td></tr>
+  <tr><td>👆 Interaktív menü</td><td>Érintőgombok ikonnal, felirattal és alcímmel, amik más tartalmakat nyitnak meg. A Vissza és Kezdőlap gomb magától megjelenik; a tétlenségi idő után a képernyő visszatér a listához.</td></tr>
+  <tr><td>📋 Űrlap</td><td>Az egyik űrlapodat mutatja (lásd <a href="#forms">Űrlapok</a>).</td></tr>
+  <tr><td>📅 Naptár</td><td>Megjelenítendő naptárak, nézet (lista, hét, hónap), hány napra előre, legfeljebb hány esemény.</td></tr>
+  <tr><td>🕒 Óra és időjárás</td><td>Digitális vagy mutatós óra, másodpercek, dátum, aktuális időjárás és 5 napos előrejelzés egy városra (Open-Meteo, API-kulcs nélkül), felirat.</td></tr>
+  <tr><td>📰 Hírfolyam</td><td>RSS/Atom cím, hírek száma, másodperc hírenként, képek.</td></tr>
+  <tr><td>⏳ Visszaszámláló</td><td>Cím, céldátum és -időpont, a lejártakor megjelenő szöveg, háttér.</td></tr>
+  <tr><td>🔳 QR kód</td><td>Link vagy szöveg (Wi-Fi belépés, étlap, weboldal), cím, felirat. A kijelzőn készül, internet nem kell hozzá.</td></tr>
+  <tr><td>🌐 Weboldal</td><td>Cím, nagyítás, érinthető vagy csak megjelenítés, időzített frissítés. Néhány oldal (Google, Facebook…) tiltja a beágyazást.</td></tr>
+  <tr><td>📄 PDF</td><td>PDF a médiatárból és a megjelenítendő oldal.</td></tr>
+  <tr><td>🧩 Egyedi HTML</td><td>Saját HTML/CSS/JS kód elszigetelt keretben.</td></tr>
+</table>
+<p>Egy tartalomnál megnyithatod a teljes képernyős előnézetét, másolatot készíthetsz róla, és törlés előtt látod, mely listák használják.</p>
+
+<h3 id="media">Médiatár</h3>
+<p>Képek (JPG, PNG, WebP, GIF), videók (MP4, WebM) és PDF-ek feltöltése húzással. Egy fájl legfeljebb 2 GB lehet (<code>MAX_UPLOAD_MB</code>). Minden fájlnak van közvetlen linkje; a lejátszók letöltik és eltárolják őket az offline működéshez.</p>
+
+<h3 id="calendars">Naptárak</h3>
+<p>Hozz létre naptárakat egy színnel (a téma valamelyik színe vagy egy előre megadott szín), és vegyél fel eseményeket kézzel, vagy importálj egy Google, Outlook vagy bármilyen iCal (<code>.ics</code>) linket. Az importált naptárak 15 percenként frissülnek, a <b>Frissítés</b> gombbal azonnal. Egész napos események is lehetnek. Az ismétlődő eseményeket (RRULE) nem bontja ki, csak az első előfordulás látszik.</p>
+
+<h3 id="forms">Űrlapok</h3>
+<p>Érintőképernyős űrlapok kérdőívekhez, jelentkezésekhez, vendégregisztrációhoz. Indulhatsz sablonból (elégedettségi kérdőív, kapcsolatfelvétel, vendégregisztráció) vagy üresen.</p>
+<p>Mezőtípusok: rövid szöveg, hosszú szöveg, e-mail, telefonszám, szám, legördülő lista, választógombok, jelölőnégyzet, csillagos értékelés, elégedettség (smiley). Bármely mező lehet kötelező. A kijelzőn szöveges mezőkhöz virtuális billentyűzet (angol vagy magyar kiosztás) jelenik meg, ha a képernyőn be van kapcsolva.</p>
+<p>A beküldések az űrlap alatt látszanak, azzal együtt, melyik képernyőről jöttek; <b>CSV</b>-be exportálhatók.</p>
+
+<h3 id="branding">Arculat</h3>
+<ol>
+  <li><b>Téma</b>: 10 beépített téma (Narancs, Óceán, Erdő, Éjféli lila, Bordó, Fekete-arany, Neon, Tiszta világos, Vállalati kék, Pasztell). Mindegyik beállítja a színeket, betűtípusokat és a lekerekítést; utána bármelyik szín, a szöveg és a címek betűtípusa és a lekerekítés felülírható.</li>
+  <li><b>Szervezet, logó és címek</b>: a szervezet neve, szlogen, logó (átlátszó hátterű PNG vagy SVG ajánlott), logó vízjel valamelyik sarokban, méretével és átlátszatlanságával.</li>
+  <li><b>Fejléc sáv</b>: logó, cím, alcím és óra minden képernyő tetején, minden tartalom fölött.</li>
+  <li><b>Tartalmak színezése</b>: az új tartalmak alapból a téma színeit használják; az <b>Összes tartalom arculat szerint</b> gomb a régebbi, egyedi színű tartalmakat is átszínezi. A képek és videók nem változnak.</li>
+</ol>
+<p>A változások azonnal látszanak az előnézetben, és mentés után kerülnek ki a képernyőkre. Egy képernyő eltérő témát is használhat (<b>Képernyők → Szerkesztés → Megjelenés</b>); a logó és a fejléc globális marad.</p>
+
+<h3 id="alerts">Vészjelzés</h3>
+<p>Azonnali teljes képernyős üzenet minden vagy csak a kiválasztott képernyőkön. Megadható a cím, az üzenet, a szint (információ, figyelmeztetés, veszély, siker) és a lejárat percben (vagy lejárat nélkül). Sablonok: tűzriadó, evakuálás, rövid szünet, gratuláció. Az aktív jelzések listájában egy gombbal leállíthatók; a képernyők a lejáratig vagy a leállításig mutatják.</p>
+
+<h3 id="settings">Beállítások és felhasználók</h3>
+<ul>
+  <li>Az admin felület, a képernyők és a szerverüzenetek <b>nyelve</b> (angol vagy magyar).</li>
+  <li><b>Jelszó</b> módosítása és <b>felhasználók</b> kezelése: minden felhasználó teljes jogú adminisztrátor.</li>
+  <li><b>Minta tartalmak</b>: az alap minta lista újbóli létrehozása.</li>
+  <li><b>Rendszer és mentés</b>: adatkönyvtár, futásidő, lejátszó címe, adatbázis letöltése, összes képernyő újratöltése.</li>
+</ul>
+</section>
+
+<section id="display">
+<h2>A kijelzőn</h2>
+<ul>
+  <li><b>Indulás</b>: bootkép folyamatjelzővel → betöltő kép → tartalom. Ha a szerver nem érhető el, egy állapotképernyő mutatja az okát, és a lejátszó tovább próbálkozik.</li>
+  <li><b>Offline</b>: a beállítások és az összes médiafájl el van tárolva. Ha a szerver vagy a hálózat leáll, a képernyő tovább játszik, és egy kis „Offline – tárolt tartalom” felirat jelzi.</li>
+  <li><b>Valós idejű frissítés</b>: a mentett változások, vészjelzések és parancsok másodpercek alatt megérkeznek (Server-Sent Events).</li>
+  <li><b>Érintés</b>: az interaktív tartalmak (menük, kártyák, űrlapok) reagálnak az érintésre; a képernyőre beállított tétlenségi idő után folytatódik a lejátszás.</li>
+  <li><b>Egér</b>: nem tablet módban a mutató látszik, amíg mozog az egér, és 3 másodperc után eltűnik.</li>
+  <li><b>Billentyűzet</b>: <kbd>→</kbd> következő, <kbd>←</kbd> előző, <kbd>I</kbd> azonosítás.</li>
+  <li><b>Statisztika</b>: a megjelenések és érintések az irányítópultra kerülnek.</li>
+</ul>
+</section>
+
+<section id="operations">
+<h2>Üzemeltetés</h2>
+<table>
+  <tr><th>Feladat</th><th>Parancs</th></tr>
+  <tr><td>Állapot</td><td><code>systemctl status narancs-signage</code></td></tr>
+  <tr><td>Napló</td><td><code>journalctl -u narancs-signage -f</code></td></tr>
+  <tr><td>Újraindítás</td><td><code>sudo systemctl restart narancs-signage</code></td></tr>
+  <tr><td>Kézi mentés</td><td><code>sudo signage-backup</code></td></tr>
+  <tr><td>Frissítés</td><td><code>git pull &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
+  <tr><td>Adott verzió telepítése</td><td><code>git checkout v1.9.7 &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
+  <tr><td>Adatok</td><td><code>/var/lib/narancs-signage</code> (<code>signage.db</code> + <code>media/</code>)</td></tr>
+</table>
+
+<h3 id="backup">Mentés és visszaállítás</h3>
+<p>A <code>signage-backup</code> minden éjjel 3-kor teljes mentést készít (adatbázis pillanatkép + média) a <code>/var/backups/narancs-signage/signage-DÁTUM.tar.gz</code> fájlba, és az utolsó 14-et megtartja. Az admin felületről az adatbázis külön is letölthető.</p>
+<p>Visszaállítás mentésből:</p>
+<pre><code>sudo systemctl stop narancs-signage
+cd /var/lib/narancs-signage
+sudo rm -f signage.db signage.db-wal signage.db-shm
+sudo tar -xzf /var/backups/narancs-signage/signage-20261010-030000.tar.gz
+sudo mv backup-20261010-030000.db signage.db
+sudo chown -R signage: /var/lib/narancs-signage
+sudo systemctl start narancs-signage</code></pre>
+
+<h3 id="updates">A kijelzők frissítése</h3>
+<p>A lejátszó (böngészős) változásai egy <b>Újratöltés</b> paranccsal jutnak ki a képernyőkre az admin felületről. A kioszk saját változásaihoz (bootkép, ügynök, Chromium kapcsolók) a lejátszó telepítőt újra kell futtatni az eszközön; az eszközazonosító és a párosítás megmarad.</p>
+</section>
+
+<section id="troubleshooting">
+<h2>Hibaelhárítás</h2>
+<p>A kijelzőn a <code>sudo signage-diag</code> kiírja a szerver címét, az eszközazonosítót, hogy elérhető-e a szerver, a párosítás állapotát, a grafikus beállítást és az X napló utolsó sorait. Ugyanez az API <code>diag</code> parancsával távolról is lekérhető; az eredmény a képernyő <code>info.diag</code> mezőjébe kerül.</p>
+<dl class="faq">
+  <dt>A kijelző nem mutat párosító kódot</dt>
+  <dd>Ellenőrizd a hálózatot és a szerver címét a <code>sudo signage-diag</code> paranccsal. A lejátszó folyamatosan próbálkozik, és néhány sikertelen kísérlet után állapotképernyőt mutat. Ha rossz a szervercím, futtasd újra a telepítőt a helyes címmel.</dd>
+  <dt>Fekete vagy egyszínű kép virtuális gépen</dt>
+  <dd>Egyes virtuális gépeken (pl. virgl az UTM/QEMU alatt) a 3D gyorsítás képe nem jut ki a kijelzőre. A telepítő felismeri a virtuális gépet, és szoftveres megjelenítést használ; ez a <code>--no-gpu</code> kapcsolóval kényszeríthető.</dd>
+  <dt>A képernyő „Offline” az admin felületen</dt>
+  <dd>Az eszköz 90 másodperce nem jelentkezett. Ettől még játssza a tárolt tartalmat. Ellenőrizd a hálózatát és az áramellátását; ha újra kapcsolódik, magától frissül.</dd>
+  <dt>Egy weboldal nem jelenik meg</dt>
+  <dd>Sok oldal tiltja, hogy keretbe ágyazzák (X-Frame-Options / CSP). Használj beágyazást engedő oldalt, egy dashboard „kiosk” vagy „embed” linkjét, vagy képernyőképet.</dd>
+  <dt>A videó hang nélkül megy</dt>
+  <dd>A telepített lejátszó engedi a hangos automatikus lejátszást. Sima böngészőben a böngésző lenémíthatja, amíg valaki nem kattint az oldalon.</dd>
+  <dt>Soha nem jelenik meg az egérmutató</dt>
+  <dd>A képernyőn be van kapcsolva a tablet mód (<b>Képernyők → Szerkesztés → Általános</b>). Kapcsold ki, és mozgatáskor látszani fog a mutató.</dd>
+  <dt>Az emojik körvonalasak</dt>
+  <dd>A lejátszó minden emojit színes emoji betűtípussal rajzol. Futtasd újra a lejátszó telepítőt, hogy a betűtípus csomag felkerüljön.</dd>
+  <dt>Elfelejtettem az admin jelszót</dt>
+  <dd>Egy másik admin létrehozhat neked új felhasználót. Ha te vagy az egyetlen admin, állíts vissza egy régebbi mentést, vagy kérj segítséget egy GitHub issue-ban.</dd>
+</dl>
+</section>
+
+<section id="api">
+<h2>API referencia</h2>
+<p>Az admin felület JSON REST API-t használ. A hitelesítés munkamenet sütivel történik (<code>POST /api/auth/login</code>); az adatot módosító kéréseknek az <code>X-Signage: 1</code> fejlécet is küldeniük kell (CSRF védelem). Hiba esetén a válasz <code>{ "error": "üzenet" }</code>, 4xx/5xx státusszal.</p>
+<table>
+  <tr><th>Végpont</th><th>Leírás</th></tr>
+  <tr><td><code>POST /api/auth/login</code> · <code>/logout</code> · <code>GET /api/auth/state</code></td><td>Belépés, kilépés, aktuális felhasználó.</td></tr>
+  <tr><td><code>GET|POST /api/slides</code> · <code>GET|PUT|DELETE /api/slides/:id</code></td><td>Tartalmak. Továbbá <code>POST /api/slides/:id/duplicate</code>, <code>GET /api/slides/:id/usage</code>.</td></tr>
+  <tr><td><code>/api/playlists</code>, <code>/api/calendars</code>, <code>/api/forms</code></td><td>Ugyanilyen CRUD végpontok.</td></tr>
+  <tr><td><code>GET|POST /api/events</code> · <code>PUT|DELETE /api/events/:id</code></td><td>Naptáresemények (<code>?calendar_id=</code>).</td></tr>
+  <tr><td><code>GET|POST /api/media</code> · <code>PUT|DELETE /api/media/:id</code></td><td>Médiatár; feltöltés a nyers fájllal mint kéréstörzs, <code>X-Filename</code> fejléccel.</td></tr>
+  <tr><td><code>GET /api/screens</code> · <code>PUT|DELETE /api/screens/:id</code></td><td>Képernyők és párosításra váró eszközök.</td></tr>
+  <tr><td><code>POST /api/screens/pair</code></td><td>Eszköz párosítása: <code>{ code, name, playlist_id }</code>.</td></tr>
+  <tr><td><code>POST /api/screens/:id/command</code> · <code>POST /api/screens/broadcast</code></td><td>Parancsok: <code>identify</code>, <code>prev</code>, <code>next</code>, <code>reload</code>, <code>clear-cache</code>, <code>diag</code>, <code>restart</code>, <code>reboot</code>.</td></tr>
+  <tr><td><code>GET|POST /api/alerts</code> · <code>DELETE /api/alerts/:id</code></td><td>Vészjelzések: <code>{ title, message, level, screen_ids, minutes }</code>.</td></tr>
+  <tr><td><code>GET /api/forms/:id/submissions</code> · <code>GET /api/forms/:id/export.csv</code></td><td>Űrlap beküldések.</td></tr>
+  <tr><td><code>GET|PUT /api/settings</code> · <code>GET /api/dashboard</code> · <code>GET /api/backup</code></td><td>Beállítások, irányítópult adatai, adatbázis letöltése.</td></tr>
+</table>
+<p>A lejátszó a nyilvános <code>/api/player/*</code> végpontokat használja (hello, config, stream, heartbeat, forms, weather, rss), az eszközazonosítójával.</p>
+</section>
+
+<section id="faq">
+<h2>GYIK és licenc</h2>
+<dl class="faq">
+  <dt>Ingyenes?</dt>
+  <dd>Igen. Szabadon és ingyen használható, módosítható és megosztható, üzleti célra is. Eladni csak a szerző adhatja el; a telepítésért, üzemeltetésért vagy tartalomkészítésért viszont lehet pénzt kérni. A licencfájlt és az admin felület szerzői jogi feliratát meg kell tartani. Részletek: <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE">Narancs Signage licenc</a>.</dd>
+  <dt>Kell hozzá felhő vagy fiók?</dt>
+  <dd>Nem. Minden a saját szervereden fut; csak az időjárás, az RSS és az iCal funkciók töltenek le adatot az internetről.</dd>
+  <dt>Hány képernyőt bír?</dt>
+  <dd>A szerver kis erőforrást igényel; egy kis gépen is gond nélkül elvisz több tucat képernyőt. A médiafájlokat a kijelzők eltárolják, így a forgalom nagy része kis frissítés.</dd>
+  <dt>Hol jelezhetek hibát vagy kérhetek funkciót?</dt>
+  <dd>Nyiss egy issue-t a <a href="https://github.com/mzzg-bazsi/narancs-signage/issues">GitHubon</a>. Az egyes verziók változásai a <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/CHANGELOG.md">változásnaplóban</a> vannak.</dd>
+</dl>
+</section>
+
+</article>

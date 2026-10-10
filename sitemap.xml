@@ -20,4 +20,14 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://mzzg-bazsi.github.io/narancs-signage-website/demo/"/>
     <xhtml:link rel="alternate" hreflang="hu" href="https://mzzg-bazsi.github.io/narancs-signage-website/demo/?lang=hu"/>
   </url>
+  <url>
+    <loc>https://mzzg-bazsi.github.io/narancs-signage-website/docs/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mzzg-bazsi.github.io/narancs-signage-website/docs/"/>
+    <xhtml:link rel="alternate" hreflang="hu" href="https://mzzg-bazsi.github.io/narancs-signage-website/docs/?lang=hu"/>
+  </url>
+  <url>
+    <loc>https://mzzg-bazsi.github.io/narancs-signage-website/docs/?lang=hu</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mzzg-bazsi.github.io/narancs-signage-website/docs/"/>
+    <xhtml:link rel="alternate" hreflang="hu" href="https://mzzg-bazsi.github.io/narancs-signage-website/docs/?lang=hu"/>
+  </url>
 </urlset>
