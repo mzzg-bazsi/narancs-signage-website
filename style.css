@@ -264,3 +264,17 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
   .doc td:first-child { white-space: normal; }
 }
 .more-docs { margin: 22px 0 0; font-weight: 600; }
+
+/* Claude szakasz */
+.claude-card { background: radial-gradient(rgba(255,255,255,.06) 1.2px, transparent 1.5px) 0 0 / 22px 22px, linear-gradient(135deg, #2a1a10, #4a2a14); color: #fff8f2; border-radius: 24px; padding: clamp(28px, 5vw, 56px); }
+.claude-card .kicker { color: #ffb27a; }
+.claude-card h2 { color: #fff; }
+.claude-lead { font-size: 18px; color: #f3dfcf; max-width: 46em; margin: 0 0 26px; }
+.claude-stats { list-style: none; padding: 0; margin: 0 0 28px; display: flex; flex-wrap: wrap; gap: 10px 30px; color: #e3c7b1; font-size: 14px; }
+.claude-stats b { color: #ffb27a; font-size: 26px; font-weight: 800; margin-right: 5px; }
+.claude-points { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); margin-bottom: 28px; }
+.claude-points article { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); }
+.claude-points h3 { color: #fff; }
+.claude-points p { color: #e3c7b1; }
+.btn-light { background: #f59e5b; color: #2a1300; border-color: #f59e5b; }
+@media (max-width: 440px) { .brand-name { display: none; } .nav nav { gap: 12px; } }

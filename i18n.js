@@ -2,6 +2,20 @@
    Elsőbbség: ?lang= → elmentett választás → böngésző nyelve. */
 (() => {
   const HU = {
+    "7,000+": "7000+",
+    "Made with AI": "MI-vel készült",
+    "Programmed entirely by Claude": "Teljes egészében a Claude programozta",
+    "Every line of Narancs Signage — the server, the admin panel, the player, the installers, this website and its documentation — was written by Claude, Anthropic's AI, in Claude Code. Balázs Mazzag brought the idea, the requirements and the testing on real hardware; Claude turned them into a working product.": "A Narancs Signage minden sorát — a szervert, az admin felületet, a lejátszót, a telepítőket, ezt a weboldalt és a dokumentációt — a Claude, az Anthropic mesterséges intelligenciája írta a Claude Code-ban. Az ötletet, az elvárásokat és a valódi eszközökön végzett tesztelést Mazzag Balázs adta; ebből a Claude működő terméket készített.",
+    "lines of code": "sor kód",
+    "released versions": "kiadott verzió",
+    "languages": "nyelv",
+    "From an empty folder": "Egy üres mappából",
+    "It started with one sentence: build a complete signage system from scratch. Server, database, admin, player and installers followed, one conversation at a time.": "Egyetlen mondattal kezdődött: készíts egy teljes signage rendszert a semmiből. Utána jött a szerver, az adatbázis, az admin, a lejátszó és a telepítők, beszélgetésről beszélgetésre.",
+    "Debugged on real hardware": "Valódi eszközön hibakeresve",
+    "Boot screens, GPU quirks in virtual machines, touch and mouse input — problems found on a real display were diagnosed and fixed by Claude.": "Bootkép, grafikus furcsaságok virtuális gépen, érintés és egér — a valódi kijelzőn előjött hibákat a Claude derítette fel és javította.",
+    "Built like a real project": "Igazi projektként építve",
+    "Semantic versions, a changelog, every change committed and released on GitHub — the same discipline as a human team.": "Szemantikus verziók, változásnapló, minden módosítás commitolva és kiadva a GitHubon — ugyanazzal a fegyelemmel, mint egy emberi csapat.",
+    "Try Claude Code →": "Próbáld ki a Claude Code-ot →",
     "Programmed entirely by <a href=\"https://claude.com/claude-code\">Claude</a> (Anthropic)": "Teljes egészében a <a href=\"https://claude.com/claude-code\">Claude</a> (Anthropic) programozta",
     "Read the full documentation →": "A teljes dokumentáció →",
     "Docs": "Dokumentáció",
