@@ -29,6 +29,36 @@
     "✓ = available · – = not stated on the vendor's public pricing or feature pages. Prices per screen per month, billed annually, from the vendors' public pages, checked on 10 October 2026. <sup>1</sup> Xibo: cloud plans on request; the self-hosted CMS needs paid player licences except for the open-source Windows player. All trademarks belong to their owners.": "✓ = elérhető · – = a gyártó nyilvános ár- vagy funkcióoldalán nincs feltüntetve. Az árak kijelzőnként és havonta, éves számlázással értendők, a gyártók nyilvános oldalai alapján, 2026. október 10-i állapot szerint. <sup>1</sup> Xibo: a felhős csomagok ára egyedi ajánlat; a saját szerveres CMS-hez fizetős lejátszó licencek kellenek, kivéve a nyílt forrású Windows lejátszót. Minden védjegy a tulajdonosáé.",
     "Compare": "Összehasonlítás",
     "Templates": "Sablonok",
+    "Templates for your screens": "Sablonok a kijelzőidre",
+    "Ready-made playlists for shops, offices, clinics and more. Install one in a click, then change the texts to your own.": "Kész lejátszási listák üzletekbe, irodákba, rendelőkbe és még sok helyre. Egy kattintással telepítheted, aztán átírhatod a saját szövegeidre.",
+    "In the admin panel, open <b>Templates → Community gallery</b> and press <b>Install</b>. You can also download a file here and use <b>Import from file</b>.": "Az admin felületen nyisd meg a <b>Sablonok → Közösségi galéria</b> oldalt, és nyomd meg a <b>Telepítés</b> gombot. Innen is letölthetsz egy fájlt, és az <b>Importálás fájlból</b> gombbal betöltheted.",
+    "Search": "Keresés",
+    "Loading templates…": "Sablonok betöltése…",
+    "Share": "Megosztás",
+    "Share your own template": "Oszd meg a saját sablonodat",
+    "Built a playlist other businesses could use? Send it in, and after a quick check it appears in every Narancs Signage admin panel.": "Összeraktál egy listát, ami más vállalkozásnak is jól jönne? Küldd be, és egy gyors ellenőrzés után minden Narancs Signage admin felületen megjelenik.",
+    "Submit a template": "Sablon beküldése",
+    "Export it": "Exportáld",
+    "In the admin panel open the content or playlist, then <b>Export → Submit to the gallery</b>.": "Az admin felületen nyisd meg a tartalmat vagy a listát, majd <b>Exportálás → Beküldés a galériába</b>.",
+    "Attach the file": "Csatold a fájlt",
+    "The submission form opens on GitHub. Drag the downloaded <code>.narancs.json</code> file into it and send it.": "Megnyílik a beküldő űrlap a GitHubon. Húzd bele a letöltött <code>.narancs.json</code> fájlt, és küldd el.",
+    "It gets checked": "Ellenőrizzük",
+    "A bot validates it with the same checks the app uses and opens a pull request. After review it is published.": "Egy robot ugyanazzal az ellenőrzéssel vizsgálja meg, amit az alkalmazás is használ, és pull requestet nyit. Jóváhagyás után megjelenik.",
+    "All": "Mind",
+    "Download": "Letöltés",
+    "{n} slides": "{n} dia",
+    "1 form": "1 űrlap",
+    "{n} forms": "{n} űrlap",
+    "1 calendar": "1 naptár",
+    "{n} calendars": "{n} naptár",
+    "by {a}": "készítette: {a}",
+    "Slide {n}: {name}": "{n}. dia: {name}",
+    "No templates match.": "Nincs ilyen sablon.",
+    "The gallery could not be loaded. Refresh the page to try again.": "A galéria nem töltődött be. Frissítsd az oldalt az újrapróbáláshoz.",
+    "Not available in this language": "Ezen a nyelven nem érhető el",
+    "Your Business": "Cégnév",
+    "Narancs Signage templates": "Narancs Signage sablonok",
+    "Ready-made content packs for Narancs Signage screens: restaurants, offices, shops, clinics, schools, hotels and more. Install from the admin panel or download the file.": "Kész tartalomcsomagok Narancs Signage kijelzőkre: éttermek, irodák, üzletek, rendelők, iskolák, szállodák és még sok más. Telepítsd az admin felületről, vagy töltsd le a fájlt.",
     "Comparison": "Összehasonlítás",
     "Narancs Signage vs paid signage": "Narancs Signage vs. fizetős rendszerek",
     "The popular signage services charge per screen, every month, and keep your content in their cloud. Narancs Signage runs on your own server, for free, with the features you would pay for.": "A népszerű signage szolgáltatások kijelzőnként, havonta számláznak, és a tartalmaidat a saját felhőjükben tartják. A Narancs Signage a saját szervereden fut, ingyen, azokkal a funkciókkal, amikért máshol fizetnél.",
@@ -255,8 +285,6 @@
   window.t = (s) => (lang === 'hu' && HU[s]) || s;
   document.documentElement.lang = lang;
 
-  // a sablongaléria (külön oldal) ugyanazon a nyelven nyíljon
-  if (lang === 'hu') for (const a of document.querySelectorAll('a[href^="https://mzzg-bazsi.github.io/narancs-signage-templates/"]')) a.search = '?lang=hu';
   if (lang === 'hu') {
     // data-i18n: az elem teljes belső HTML-je egy kulcs (vegyes tartalomhoz), máshol szövegcsomópontonként
     for (const el of document.querySelectorAll('[data-i18n]')) { const k = el.innerHTML.trim(); if (HU[k]) el.innerHTML = HU[k]; }

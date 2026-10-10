@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Narancs Signage templates</title>
+<meta name="description" content="Ready-made content packs for Narancs Signage screens: restaurants, offices, shops, clinics, schools, hotels and more. Install from the admin panel or download the file.">
+<link rel="alternate" hreflang="en" href="https://mzzg-bazsi.github.io/narancs-signage-website/templates/">
+<link rel="alternate" hreflang="hu" href="https://mzzg-bazsi.github.io/narancs-signage-website/templates/?lang=hu">
+<link rel="alternate" hreflang="x-default" href="https://mzzg-bazsi.github.io/narancs-signage-website/templates/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Narancs Signage">
+<meta property="og:title" content="Narancs Signage templates">
+<meta property="og:description" content="Ready-made content packs for Narancs Signage screens: restaurants, offices, shops, clinics, schools, hotels and more. Install from the admin panel or download the file.">
+<meta property="og:url" content="https://mzzg-bazsi.github.io/narancs-signage-website/templates/">
+<meta property="og:image" content="https://mzzg-bazsi.github.io/narancs-signage-website/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="../"><img src="../assets/favicon.svg" alt="" width="30" height="30"> <span class="brand-name">Narancs Signage</span></a>
+  <nav>
+    <div class="nav-links">
+      <a href="../#features">Features</a>
+      <a href="../#screens">Screenshots</a>
+      <a href="../docs/#quickstart">Install</a>
+      <a href="../demo/">Live demo</a>
+      <a href="./" aria-current="page">Templates</a>
+      <a href="../docs/">Docs</a>
+      <a href="../compare/">Compare</a>
+    </div>
+    <span class="lang-switch"><button data-lang="en">EN</button><button data-lang="hu">HU</button></span>
+    <a class="btn btn-sm" href="https://github.com/mzzg-bazsi/narancs-signage">GitHub</a>
+    <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">☰</button>
+  </nav>
+</header>
+
+<main class="section templates-page">
+  <p class="kicker">Community gallery</p>
+  <h2>Templates for your screens</h2>
+  <p class="section-lead">Ready-made playlists for shops, offices, clinics and more. Install one in a click, then change the texts to your own.</p>
+  <p class="gallery-how" data-i18n>In the admin panel, open <b>Templates → Community gallery</b> and press <b>Install</b>. You can also download a file here and use <b>Import from file</b>.</p>
+
+  <div class="gallery-tools">
+    <div class="gallery-cats" id="cats" role="group" aria-label="Category"></div>
+    <input id="q" class="gallery-search" type="search" placeholder="Search" aria-label="Search" autocomplete="off">
+  </div>
+
+  <p class="gallery-status" id="status" role="status">Loading templates…</p>
+  <ul class="wall" id="wall"></ul>
+
+  <section class="gallery-share" id="share">
+    <div>
+      <p class="kicker">Share</p>
+      <h2>Share your own template</h2>
+      <p class="section-lead">Built a playlist other businesses could use? Send it in, and after a quick check it appears in every Narancs Signage admin panel.</p>
+      <a class="btn" href="https://github.com/mzzg-bazsi/narancs-signage-templates/issues/new?template=submit-template.yml">Submit a template</a>
+    </div>
+    <ol class="gallery-steps">
+      <li><b>Export it</b><span data-i18n>In the admin panel open the content or playlist, then <b>Export → Submit to the gallery</b>.</span></li>
+      <li><b>Attach the file</b><span data-i18n>The submission form opens on GitHub. Drag the downloaded <code>.narancs.json</code> file into it and send it.</span></li>
+      <li><b>It gets checked</b><span>A bot validates it with the same checks the app uses and opens a pull request. After review it is published.</span></li>
+    </ol>
+  </section>
+</main>
+
+<footer>
+  <img src="../assets/favicon.svg" alt="" width="24" height="24">
+  <span data-i18n>© 2026 Balázs Mazzag · <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE">Narancs Signage License</a> · free to use, modify and share</span>
+  <span class="built-with" data-i18n>Programmed entirely by <a href="https://claude.com/claude-code">Claude</a> (Anthropic)</span>
+</footer>
+
+<script src="../i18n.js"></script>
+<script src="https://mzzg-bazsi.github.io/narancs-signage-templates/zones.js"></script>
+<script src="gallery.js"></script>
+</body>
+</html>
