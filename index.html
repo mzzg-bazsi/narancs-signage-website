@@ -19,6 +19,8 @@
     <a href="#features">Features</a>
     <a href="#screens">Screenshots</a>
     <a href="#install">Install</a>
+    <a href="demo/">Live demo</a>
+    <span class="lang-switch"><button data-lang="en">EN</button><button data-lang="hu">HU</button></span>
     <a class="btn btn-sm" href="https://github.com/mzzg-bazsi/narancs-signage">GitHub</a>
   </nav>
 </header>
@@ -27,11 +29,11 @@
 <section class="hero">
   <div class="hero-text">
     <p class="kicker">Self-hosted digital signage</p>
-    <h1>Your screens.<br>Your server.<br><span>No subscription.</span></h1>
+    <h1 data-i18n>Your screens.<br>Your server.<br><span>No subscription.</span></h1>
     <p class="lead">Narancs Signage is a complete signage system: an admin panel, a player that runs on any ARM or x86 box, and one-command installers for Ubuntu Server. Slideshows, calendars, forms, touch menus — managed from one place, running even when the network is down.</p>
     <div class="cta">
       <a class="btn" href="#install">Install in two commands</a>
-      <a class="btn btn-ghost" href="https://github.com/mzzg-bazsi/narancs-signage">View on GitHub</a>
+      <a class="btn btn-ghost" href="demo/">Try the live demo</a>
     </div>
     <ul class="stats">
       <li><b>14</b> content types</li>
@@ -205,13 +207,13 @@
 cd narancs-signage
 sudo ./install/install-server.sh</code></pre>
       <button class="copy">Copy</button>
-      <p>Installs Node.js, a systemd service and daily backups. Open <code>http://SERVER-IP:8080/admin/</code> and create your account.</p>
+      <p data-i18n>Installs Node.js, a systemd service and daily backups. Open <code>http://SERVER-IP:8080/admin/</code> and create your account.</p>
     </article>
     <article>
       <h3><em>2</em> Each display <small>Ubuntu Server or Raspberry Pi OS Lite</small></h3>
       <pre><code>curl -fsSL http://SERVER-IP:8080/install-player.sh | sudo bash</code></pre>
       <button class="copy">Copy</button>
-      <p>Reboot, then enter the 6-digit code shown on the screen under <b>Screens → New screen</b>. No install? Open <code>/player/</code> in any browser.</p>
+      <p data-i18n>Reboot, then enter the 6-digit code shown on the screen under <b>Screens → New screen</b>. No install? Open <code>/player/</code> in any browser.</p>
     </article>
   </div>
 </section>
@@ -219,7 +221,7 @@ sudo ./install/install-server.sh</code></pre>
 
 <footer>
   <img src="assets/favicon.svg" alt="" width="24" height="24">
-  <span>© 2026 Balázs Mazzag · <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE">Narancs Signage License</a> · free to use, modify and share</span>
+  <span data-i18n>© 2026 Balázs Mazzag · <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE">Narancs Signage License</a> · free to use, modify and share</span>
 </footer>
 
 <dialog class="lightbox" id="lightbox" aria-label="Screenshot viewer">
@@ -232,6 +234,7 @@ sudo ./install/install-server.sh</code></pre>
   <button class="lb-btn lb-close" id="lbClose" aria-label="Close">×</button>
 </dialog>
 
+<script src="i18n.js"></script>
 <script src="demo.js"></script>
 </body>
 </html>

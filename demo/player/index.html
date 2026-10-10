@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" translate="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="google" content="notranslate">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Narancs Signage</title>
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+  <div id="boot"><img src="../shared/splash/logo.svg" alt=""><div class="bbar"><i></i></div><div class="btxt" data-i18n="Tartalom betöltése…">Loading content…</div></div>
+  <div id="rotor"><div id="stage"></div>
+    <div id="brand-header" hidden></div>
+    <img id="brand-logo" hidden alt="">
+    <div id="overlay-clock" hidden></div>
+    <div id="ticker" hidden><div class="ticker-track"></div></div>
+    <div id="alerts"></div>
+    <div id="nav" hidden>
+      <button data-nav="home" aria-label="Home" data-i18n-aria="Kezdőlap">⌂</button>
+      <button data-nav="back" aria-label="Back" data-i18n-aria="Vissza">←</button>
+    </div>
+    <div id="progress"></div>
+    <div id="identify" hidden></div>
+    <div id="offline" hidden data-i18n="● Offline – tárolt tartalom">● Offline – cached content</div>
+    <div id="keyboard" hidden></div>
+    <div id="blank" hidden></div>
+  </div>
+  <div id="pairing" hidden>
+    <div class="pair-card">
+      <img class="pair-logo" src="../shared/splash/logo-color.svg" alt="">
+      <h1 data-i18n="Képernyő párosítása">Pair this screen</h1>
+      <p data-i18n="Az admin felületen a &lt;b&gt;Képernyők → Új képernyő&lt;/b&gt; menüben add meg ezt a kódot:">In the admin panel, enter this code under <b>Screens → New screen</b>:</p>
+      <div id="pair-code">------</div>
+      <p class="pair-url" id="pair-url"></p>
+      <p class="pair-info" id="pair-info"></p>
+    </div>
+  </div>
+  <div id="status" hidden>
+    <div class="pair-card">
+      <img class="pair-logo pulse" src="../shared/splash/logo-color.svg" alt="">
+      <h1 id="status-title">Connecting…</h1>
+      <p id="status-detail" class="pair-url"></p>
+      <p class="pair-info" id="status-info"></p>
+    </div>
+  </div>
+  <script src="shim.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/themes.js"></script>
+  <script src="player.js"></script>
+</body>
+</html>

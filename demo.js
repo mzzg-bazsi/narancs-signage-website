@@ -25,13 +25,13 @@
   // 1. Telepítés – a valódi telepítő üzeneteivel
   const ticks = Array.from({ length: 56 }, () => $('#ticks').appendChild(document.createElement('i')));
   const MSGS = [
-    [0, '➜ Installing the graphical environment (X11)…'],
-    [0.25, '➜ Installing Chromium…'],
+    [0, t('➜ Installing the graphical environment (X11)…')],
+    [0.25, t('➜ Installing Chromium…')],
     [0.5, '✔ Chromium: /snap/bin/chromium'],
-    [0.62, '✔ Remote agent installed (restart from the admin panel)'],
-    [0.74, '➜ Setting up the boot screen…'],
-    [0.9, '✔ Quiet boot with boot screen configured (GRUB)'],
-    [1, '✔ Player installed! Restart the device to see the pairing code.'],
+    [0.62, t('✔ Remote agent installed (restart from the admin panel)')],
+    [0.74, t('➜ Setting up the boot screen…')],
+    [0.9, t('✔ Quiet boot with boot screen configured (GRUB)')],
+    [1, t('✔ Player installed! Restart the device to see the pairing code.')],
   ];
   let installTimer = null;
   function runInstall() {
@@ -54,7 +54,7 @@
     btn.disabled = true;
     cells.forEach((c, i) => setTimeout(() => {
       c.textContent = code[i]; c.classList.add('on');
-      if (i === cells.length - 1) setTimeout(() => { $('#pairOk').hidden = false; state.paired = true; btn.textContent = 'Paired'; }, 350);
+      if (i === cells.length - 1) setTimeout(() => { $('#pairOk').hidden = false; state.paired = true; btn.textContent = t('Paired'); }, 350);
     }, 140 * (i + 1)));
   });
 
@@ -67,7 +67,7 @@
   });
 
   // 4. Ütemezés – húzható idővonal 06–22 óra között
-  const BLOCKS = [[6, 7, null], [7, 11, 'Breakfast menu'], [11, 14, 'Lunch specials'], [14, 20, 'Events & calendar'], [20, 22, null]];
+  const BLOCKS = [[6, 7, null], [7, 11, t('Breakfast menu')], [11, 14, t('Lunch specials')], [14, 20, t('Events & calendar')], [20, 22, null]];
   const tl = $('#timeline'), blkEls = $$('.blk', tl);
   Object.assign(tl, { tabIndex: 0 });
   tl.setAttribute('role', 'slider'); tl.setAttribute('aria-label', 'Time of day'); tl.setAttribute('aria-valuemin', 6); tl.setAttribute('aria-valuemax', 22);
@@ -77,8 +77,8 @@
     $('#needle').style.left = ((hour - 6) / 16 * 100) + '%';
     const i = BLOCKS.findIndex(([a, b]) => hour >= a && hour < b);
     blkEls.forEach((el, j) => el.classList.toggle('now', j === i && BLOCKS[i][2]));
-    const t = `${String(Math.floor(hour)).padStart(2, '0')}:${String(Math.floor(hour % 1 * 4) * 15).padStart(2, '0')}`;
-    $('#nowPlaying').textContent = BLOCKS[i][2] ? `${t} · Now playing: ${BLOCKS[i][2]}` : `${t} · Screen off — monitor in standby (DPMS)`;
+    const hm = `${String(Math.floor(hour)).padStart(2, '0')}:${String(Math.floor(hour % 1 * 4) * 15).padStart(2, '0')}`;
+    $('#nowPlaying').textContent = BLOCKS[i][2] ? `${hm} · ${t('Now playing:')} ${BLOCKS[i][2]}` : `${hm} · ${t('Screen off — monitor in standby (DPMS)')}`;
     tl.setAttribute('aria-valuenow', hour.toFixed(2)); tl.setAttribute('aria-valuetext', $('#nowPlaying').textContent);
   }
   const fromPointer = (e) => { const b = tl.getBoundingClientRect(); setHour(6 + (e.clientX - b.left) / b.width * 16); };
@@ -99,7 +99,7 @@
   $('#alertBtn').addEventListener('click', (e) => {
     state.alert = !state.alert;
     $('#alert').hidden = !state.alert;
-    e.currentTarget.textContent = state.alert ? 'Clear alert' : 'Send emergency alert';
+    e.currentTarget.textContent = state.alert ? t('Clear alert') : t('Send emergency alert');
   });
 
   go(0);
@@ -143,8 +143,8 @@
 
   // Parancsok másolása
   $$('.copy').forEach((b) => b.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(b.previousElementSibling.textContent); b.textContent = 'Copied'; }
-    catch { b.textContent = 'Select & copy'; }
-    setTimeout(() => { b.textContent = 'Copy'; }, 1600);
+    try { await navigator.clipboard.writeText(b.previousElementSibling.textContent); b.textContent = t('Copied'); }
+    catch { b.textContent = t('Select & copy'); }
+    setTimeout(() => { b.textContent = t('Copy'); }, 1600);
   }));
 })();

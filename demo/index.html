@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live demo · Narancs Signage</title>
+<meta name="description" content="The real Narancs Signage player running in your browser with sample content.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="../"><img src="../assets/favicon.svg" alt="" width="30" height="30"> Narancs Signage</a>
+  <nav>
+    <a href="../#features">Features</a>
+    <a href="../#screens">Screenshots</a>
+    <a href="../#install">Install</a>
+    <a href="./">Live demo</a>
+    <span class="lang-switch"><button data-lang="en">EN</button><button data-lang="hu">HU</button></span>
+    <a class="btn btn-sm" href="https://github.com/mzzg-bazsi/narancs-signage">GitHub</a>
+  </nav>
+</header>
+
+<main class="section demo-page">
+  <p class="kicker">Live demo</p>
+  <h2>Try the player</h2>
+  <p class="section-lead">This is the real Narancs Signage player, running in your browser with the sample content every new install starts with. Nothing you do here leaves your browser.</p>
+
+  <div class="demo-layout">
+    <div>
+      <div class="tv demo-tv"><div class="tv-screen">
+        <iframe id="playerFrame" title="Narancs Signage player" allow="fullscreen"></iframe>
+      </div></div>
+      <div class="demo-controls">
+        <button class="mini" id="prevSlide">‹ Previous</button>
+        <button class="mini" id="nextSlide2">Next ›</button>
+        <button class="mini" id="fullscreen">⛶ Fullscreen</button>
+      </div>
+    </div>
+
+    <aside class="demo-side">
+      <h3>Theme</h3>
+      <p class="sub">Every content item follows the branding. Pick one of the 10 built-in themes:</p>
+      <div class="themes" id="themes"></div>
+
+      <h3>Things to try</h3>
+      <ul class="try">
+        <li>Wait — the playlist rotates by itself with a fade.</li>
+        <li>On the interactive menu, tap a button to open another content item.</li>
+        <li>Open the feedback form: smileys, choices and an on-screen keyboard.</li>
+        <li>The clock shows live weather for Budapest.</li>
+      </ul>
+      <a class="btn" href="../#install">Install it yourself</a>
+    </aside>
+  </div>
+</main>
+
+<footer>
+  <img src="../assets/favicon.svg" alt="" width="24" height="24">
+  <span data-i18n>© 2026 Balázs Mazzag · <a href="https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE">Narancs Signage License</a> · free to use, modify and share</span>
+</footer>
+
+<script src="shared/themes.js"></script>
+<script src="../i18n.js"></script>
+<script>
+(() => {
+  const frame = document.getElementById('playerFrame');
+  frame.src = `player/index.html?preview=demo:1&lang=${SITE_LANG}`;
+  const target = location.origin === 'null' ? '*' : location.origin;
+  const post = (m) => frame.contentWindow.postMessage(m, target);
+
+  // a témák neve a README angol elnevezései szerint, fordítva
+  const NAMES = { narancs: 'Orange', ocean: 'Ocean', erdo: 'Forest', ejfel: 'Midnight purple', bordo: 'Burgundy', arany: 'Black & gold', neon: 'Neon', vilagos: 'Clean light', vallalati: 'Corporate blue', pasztell: 'Pastel' };
+  const box = document.getElementById('themes');
+  for (const [key, th] of Object.entries(SIGNAGE_THEMES.THEMES)) {
+    const b = document.createElement('button');
+    b.className = 'theme' + (key === 'narancs' ? ' on' : '');
+    b.innerHTML = `<i style="background:linear-gradient(135deg, ${th.colors.bg2}, ${th.colors.bg})"><b style="background:${th.colors.accent}"></b></i>`;
+    b.append(t(NAMES[key] || th.name));
+    b.addEventListener('click', () => {
+      box.querySelectorAll('.theme').forEach((x) => x.classList.toggle('on', x === b));
+      post({ type: 'branding', org: {}, theme: key });
+    });
+    box.append(b);
+  }
+  document.getElementById('prevSlide').addEventListener('click', () => post({ type: 'nav', step: -1 }));
+  document.getElementById('nextSlide2').addEventListener('click', () => post({ type: 'nav', step: 1 }));
+  document.getElementById('fullscreen').addEventListener('click', () => frame.requestFullscreen?.());
+})();
+</script>
+</body>
+</html>

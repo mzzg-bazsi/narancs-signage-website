@@ -1,0 +1,193 @@
+/* Nyelv: angol az alap, magyar fordítás a HU szótárból (kulcs = az angol szöveg).
+   Elsőbbség: ?lang= → elmentett választás → böngésző nyelve. */
+(() => {
+  const HU = {
+    "Your screens.<br>Your server.<br><span>No subscription.</span>": "A te kijelzőid.<br>A te szervered.<br><span>Előfizetés nélkül.</span>",
+    "Installs Node.js, a systemd service and daily backups. Open <code>http://SERVER-IP:8080/admin/</code> and create your account.": "Telepíti a Node.js-t, a systemd szolgáltatást és a napi mentést. Nyisd meg a <code>http://SZERVER-IP:8080/admin/</code> címet, és hozd létre a fiókodat.",
+    "Reboot, then enter the 6-digit code shown on the screen under <b>Screens → New screen</b>. No install? Open <code>/player/</code> in any browser.": "Újraindítás után add meg a képernyőn megjelenő 6 jegyű kódot a <b>Képernyők → Új képernyő</b> menüben. Telepítés nélkül? Nyisd meg a <code>/player/</code> címet bármilyen böngészőben.",
+    "© 2026 Balázs Mazzag · <a href=\"https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE\">Narancs Signage License</a> · free to use, modify and share": "© 2026 Mazzag Balázs · <a href=\"https://github.com/mzzg-bazsi/narancs-signage/blob/main/LICENSE\">Narancs Signage licenc</a> · szabadon használható, módosítható és megosztható",
+    "Features": "Funkciók",
+    "Screenshots": "Képek",
+    "Install": "Telepítés",
+    "Live demo": "Élő demó",
+    "Self-hosted digital signage": "Saját szerveres digital signage",
+    "Narancs Signage is a complete signage system: an admin panel, a player that runs on any ARM or x86 box, and one-command installers for Ubuntu Server. Slideshows, calendars, forms, touch menus — managed from one place, running even when the network is down.": "A Narancs Signage egy teljes digitális kijelzőrendszer: admin felület, bármilyen ARM vagy x86 gépen futó lejátszó, és egyparancsos telepítők Ubuntu Serverre. Képváltók, naptárak, űrlapok, érintős menük — egy helyről kezelve, hálózat nélkül is működve.",
+    "Install in two commands": "Telepítés két paranccsal",
+    "Try the live demo": "Próbáld ki élőben",
+    "content types": "tartalomtípus",
+    "dependencies": "függőség",
+    "command per screen": "parancs kijelzőnként",
+    "Click through the five steps": "Kattints végig az öt lépésen",
+    "Pair": "Párosítás",
+    "Create": "Tartalom",
+    "Schedule": "Ütemezés",
+    "Play": "Lejátszás",
+    "Install the player": "A lejátszó telepítése",
+    "One command on any Ubuntu Server or Raspberry Pi. No desktop, no window manager — just a locked-down Chromium kiosk.": "Egyetlen parancs bármilyen Ubuntu Serveren vagy Raspberry Pi-on. Nincs asztali környezet, nincs ablakkezelő — csak egy lezárt Chromium kioszk.",
+    "➜ Installing the graphical environment (X11)…": "➜ A grafikus környezet (X11) telepítése…",
+    "➜ Installing Chromium…": "➜ A Chromium telepítése…",
+    "✔ Remote agent installed (restart from the admin panel)": "✔ Távoli ügynök telepítve (újraindítás az admin felületről)",
+    "➜ Setting up the boot screen…": "➜ Az indulókép beállítása…",
+    "✔ Quiet boot with boot screen configured (GRUB)": "✔ Csendes indítás bootképpel beállítva (GRUB)",
+    "✔ Player installed! Restart the device to see the pairing code.": "✔ A lejátszó telepítve! Újraindítás után megjelenik a párosító kód.",
+    "Run again": "Újra",
+    "Next: pair →": "Tovább: párosítás →",
+    "Pairing code": "Párosító kód",
+    "Pair the screen": "A képernyő párosítása",
+    "After the reboot the display shows a 6-digit code. Type it into the admin panel.": "Újraindítás után a kijelzőn megjelenik egy 6 jegyű kód. Ezt kell beírni az admin felületen.",
+    "Name": "Név",
+    "Lobby": "Előtér",
+    "Enter code & pair": "Kód beírása és párosítás",
+    "Paired": "Párosítva",
+    "✓ “Lobby” is online — 1920×1080, Chromium 140": "✓ Az „Előtér” online — 1920×1080, Chromium 140",
+    "📝 Announcement": "📝 Hirdetmény",
+    "🕒 Clock & weather": "🕒 Óra és időjárás",
+    "📅 Calendar": "📅 Naptár",
+    "🃏 Cards": "🃏 Kártyák",
+    "👆 Touch menu": "👆 Érintős menü",
+    "📋 Form": "📋 Űrlap",
+    "Live preview, coloured by your branding. 14 types in total.": "Élő előnézet, az arculatod színeivel. Összesen 14 típus.",
+    "Schedule the day": "A nap beosztása",
+    "Different playlists by time, weekday and date range. Drag the needle.": "Más lejátszási lista időszak, nap és dátum szerint. Húzd a mutatót!",
+    "off": "ki",
+    "Breakfast menu": "Reggeli menü",
+    "Lunch specials": "Napi ebéd",
+    "Events & calendar": "Események és naptár",
+    "screen off": "kijelző ki",
+    "Now playing:": "Most játszik:",
+    "Screen off — monitor in standby (DPMS)": "Kijelző kikapcsolva — a monitor készenlétben (DPMS)",
+    "Welcome to the lobby · Today 14:00 team meeting in room 2 · Lunch: goulash soup · Wi-Fi: Guest / scan the QR code ·": "Üdvözlünk! · Ma 14:00 csapatmegbeszélés a 2-es tárgyalóban · Ebéd: gulyásleves · Wi-Fi: Vendég / olvasd be a QR-kódot ·",
+    "🔥 FIRE ALARM": "🔥 TŰZRIADÓ",
+    "Leave the building by the nearest exit": "Hagyja el az épületet a legközelebbi kijáraton",
+    "It plays": "Megy a műsor",
+    "Fades, slides, Ken Burns. Cached offline. Remote reload, restart and emergency alerts from the admin.": "Áttűnés, csúsztatás, Ken Burns. Offline is fut. Távoli újratöltés, újraindítás és vészriasztás az adminból.",
+    "Next slide": "Következő",
+    "Send emergency alert": "Vészriasztás küldése",
+    "Clear alert": "Riasztás vége",
+    "Everything a screen needs": "Minden, ami egy kijelzőre kell",
+    "Fourteen content types, all editable in the browser with a live preview.": "Tizennégy tartalomtípus, mind a böngészőben szerkeszthető, élő előnézettel.",
+    "Image slideshow": "Képváltó",
+    "Fade, slide, Ken Burns, captions and a blurred background.": "Áttűnés, csúsztatás, Ken Burns, feliratok és elmosott háttér.",
+    "Video": "Videó",
+    "Play to the end or for a set time, with or without sound.": "Végig vagy megadott ideig, hanggal vagy némítva.",
+    "Announcement": "Hirdetmény",
+    "Title, text, background image or video, gradients, logo.": "Cím, szöveg, háttérkép vagy -videó, színátmenet, logó.",
+    "Cards": "Kártyák",
+    "Tiles with icons and badges; a tap opens other content.": "Csempék ikonokkal és címkékkel; érintésre másik tartalom nyílik.",
+    "Interactive menu": "Interaktív menü",
+    "Touch buttons, back/home, auto-return after inactivity.": "Érintőgombok, vissza/kezdőlap, automatikus visszatérés tétlenség után.",
+    "Form": "Űrlap",
+    "Surveys and sign-ups with a virtual keyboard and CSV export.": "Kérdőívek és jelentkezések virtuális billentyűzettel, CSV exporttal.",
+    "Calendar": "Naptár",
+    "List, week, month; your events plus Google/Outlook iCal.": "Lista, hét, hónap; saját események és Google/Outlook iCal.",
+    "Clock & weather": "Óra és időjárás",
+    "Digital or analogue, 5-day forecast, no API key needed.": "Digitális vagy mutatós, 5 napos előrejelzés, API-kulcs nélkül.",
+    "News feed": "Hírfolyam",
+    "Any RSS or Atom source, with images.": "Bármilyen RSS- vagy Atom-forrás, képekkel.",
+    "Countdown": "Visszaszámlálás",
+    "Time left until an event.": "Hátralévő idő egy eseményig.",
+    "QR code": "QR-kód",
+    "Built-in generator for links and Wi-Fi login.": "Beépített generátor linkekhez és Wi-Fi belépéshez.",
+    "Website": "Weboldal",
+    "Embed a page or dashboard, with zoom and timed reload.": "Beágyazott oldal vagy dashboard, nagyítással és időzített frissítéssel.",
+    "Show a document.": "Dokumentum megjelenítése.",
+    "Custom HTML": "Egyedi HTML",
+    "Your own HTML/CSS/JS in an isolated frame.": "Saját HTML/CSS/JS kód elszigetelt keretben.",
+    "Scheduling": "Ütemezés",
+    "Playlists per screen by day, time window and date range. Scheduled screen off turns the monitor off too (DPMS).": "Lejátszási listák képernyőnként nap, időablak és dátum szerint. Az ütemezett kikapcsolás a monitort is kikapcsolja (DPMS).",
+    "Remote control": "Távvezérlés",
+    "Identify, previous/next, reload, clear cache, restart the player or reboot the device — from the admin.": "Azonosítás, előző/következő, újratöltés, gyorsítótár ürítése, a lejátszó vagy az eszköz újraindítása — az adminból.",
+    "Branding": "Arculat",
+    "10 built-in themes, custom colours, fonts, logo watermark and header bar. A different theme per screen.": "10 beépített téma, egyedi színek, betűtípusok, logó vízjel és fejléc. Képernyőnként más téma is lehet.",
+    "Emergency alerts": "Vészriasztás",
+    "An instant full-screen message on all or selected screens, with templates and expiry.": "Azonnali teljes képernyős üzenet minden vagy kiválasztott kijelzőn, sablonokkal és lejárattal.",
+    "Works offline": "Offline is működik",
+    "The player caches its configuration and media and keeps running if the server goes down.": "A lejátszó eltárolja a beállításait és a médiafájlokat, és tovább fut, ha a szerver leáll.",
+    "Polished kiosk": "Igényes kioszk",
+    "Boot splash with a progress bar instead of console text, touch or mouse mode per screen, no translate pop-ups.": "Indulókép folyamatjelzővel konzolszöveg helyett, érintős vagy egeres mód képernyőnként, fordítási felugrók nélkül.",
+    "See it": "Nézd meg",
+    "Admin panel": "Admin felület",
+    "On the display": "A kijelzőn",
+    "Dashboard": "Áttekintés",
+    "Screens": "Képernyők",
+    "Playlist editor with live preview": "Lejátszási lista szerkesztő élő előnézettel",
+    "Content editor": "Tartalomszerkesztő",
+    "Branding: 10 themes": "Arculat: 10 téma",
+    "Touch-screen form": "Érintőképernyős űrlap",
+    "Up and running in minutes": "Percek alatt működik",
+    "Server": "Szerver",
+    "Ubuntu 22.04 / 24.04, amd64 or arm64": "Ubuntu 22.04 / 24.04, amd64 vagy arm64",
+    "Copy": "Másolás",
+    "Copied": "Másolva",
+    "Select & copy": "Jelöld ki és másold",
+    "Each display": "Minden kijelzőn",
+    "Ubuntu Server or Raspberry Pi OS Lite": "Ubuntu Server vagy Raspberry Pi OS Lite",
+    "Demo steps": "Bemutató lépések",
+    "Content preview": "Tartalom előnézet",
+    "Time of day": "Napszak",
+    "Playlist editor": "Lejátszási lista szerkesztő",
+    "Clock and weather": "Óra és időjárás",
+    "Screenshot viewer": "Képnézegető",
+    "Previous": "Előző",
+    "Next": "Következő",
+    "Close": "Bezárás",
+    "A complete, self-hosted digital signage system: admin panel, ARM-ready player and one-command installers for Ubuntu Server.": "Teljes, saját szerveren futó digital signage rendszer: admin felület, ARM-on is futó lejátszó és egyparancsos telepítők Ubuntu Serverre.",
+    "Try the player": "Próbáld ki a lejátszót",
+    "This is the real Narancs Signage player, running in your browser with the sample content every new install starts with. Nothing you do here leaves your browser.": "Ez a valódi Narancs Signage lejátszó, a böngésződben fut, azokkal a minta tartalmakkal, amikkel minden új telepítés indul. Semmi nem hagyja el a böngésződet.",
+    "‹ Previous": "‹ Előző",
+    "Next ›": "Következő ›",
+    "⛶ Fullscreen": "⛶ Teljes képernyő",
+    "Theme": "Téma",
+    "Every content item follows the branding. Pick one of the 10 built-in themes:": "Minden tartalom az arculatot követi. Válassz a 10 beépített téma közül:",
+    "Orange": "Narancs",
+    "Ocean": "Óceán",
+    "Forest": "Erdő",
+    "Midnight purple": "Éjféli lila",
+    "Burgundy": "Bordó",
+    "Black & gold": "Fekete-arany",
+    "Clean light": "Tiszta világos",
+    "Corporate blue": "Vállalati kék",
+    "Pastel": "Pasztell",
+    "Things to try": "Próbáld ki",
+    "Wait — the playlist rotates by itself with a fade.": "Várj egy kicsit — a lista magától vált, áttűnéssel.",
+    "On the interactive menu, tap a button to open another content item.": "Az interaktív menüben egy gombra kattintva másik tartalom nyílik.",
+    "Open the feedback form: smileys, choices and an on-screen keyboard.": "Nyisd meg a visszajelzés űrlapot: smiley-k, választógombok és képernyő-billentyűzet.",
+    "The clock shows live weather for Budapest.": "Az órán élő budapesti időjárás látszik.",
+    "Install it yourself": "Telepítsd te is",
+    "Live demo · Narancs Signage": "Élő demó · Narancs Signage",
+    "The real Narancs Signage player running in your browser with sample content.": "A valódi Narancs Signage lejátszó a böngésződben, minta tartalommal.",
+  };
+
+  const pick = new URLSearchParams(location.search).get('lang');
+  let saved = null;
+  try { saved = localStorage.getItem('site.lang'); } catch { /* privát mód */ }
+  const lang = ['en', 'hu'].includes(pick) ? pick : saved || (navigator.language.startsWith('hu') ? 'hu' : 'en');
+  window.SITE_LANG = lang;
+  window.t = (s) => (lang === 'hu' && HU[s]) || s;
+  document.documentElement.lang = lang;
+
+  if (lang === 'hu') {
+    // data-i18n: az elem teljes belső HTML-je egy kulcs (vegyes tartalomhoz), máshol szövegcsomópontonként
+    for (const el of document.querySelectorAll('[data-i18n]')) { const k = el.innerHTML.trim(); if (HU[k]) el.innerHTML = HU[k]; }
+    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => (n.parentElement.closest('script, style, code, pre, [data-i18n]') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+    });
+    for (let n; (n = walk.nextNode());) {
+      const k = n.nodeValue.trim();
+      if (HU[k]) n.nodeValue = n.nodeValue.replace(k, HU[k]);
+    }
+    for (const el of document.querySelectorAll('[alt], [aria-label]')) for (const a of ['alt', 'aria-label']) if (HU[el.getAttribute(a)]) el.setAttribute(a, HU[el.getAttribute(a)]);
+    document.title = t(document.title);
+    const d = document.querySelector('meta[name=description]');
+    d.content = t(d.content);
+  }
+
+  for (const b of document.querySelectorAll('.lang-switch button')) {
+    b.setAttribute('aria-pressed', b.dataset.lang === lang);
+    b.addEventListener('click', () => {
+      try { localStorage.setItem('site.lang', b.dataset.lang); } catch { /* */ }
+      const u = new URL(location.href); u.searchParams.delete('lang');
+      location.href = u.href;
+    });
+  }
+})();
