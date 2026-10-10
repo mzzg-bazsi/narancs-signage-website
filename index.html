@@ -237,10 +237,8 @@
   <h2>Up and running in minutes</h2>
   <div class="grid install">
     <article>
-      <h3><em>1</em> Server <small>Ubuntu 22.04 / 24.04, amd64 or arm64</small></h3>
-      <pre><code>git clone https://github.com/mzzg-bazsi/narancs-signage.git
-cd narancs-signage
-sudo ./install/install-server.sh</code></pre>
+      <h3><em>1</em> Server <small>Ubuntu / Debian, amd64 or arm64</small></h3>
+      <pre><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.sh | sudo bash</code></pre>
       <button class="copy">Copy</button>
       <p data-i18n>Installs Node.js, a systemd service and daily backups. Open <code>http://SERVER-IP:8080/admin/</code> and create your account.</p>
     </article>

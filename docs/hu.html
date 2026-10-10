@@ -23,10 +23,8 @@
 <section id="quickstart">
 <h2>Gyors kezdés</h2>
 <ol class="steps-list">
-  <li><b>Telepítsd a szervert</b> egy Ubuntus gépre:
-<pre><code>git clone https://github.com/mzzg-bazsi/narancs-signage.git
-cd narancs-signage
-sudo ./install/install-server.sh</code></pre></li>
+  <li><b>Telepítsd a szervert</b> egy Ubuntus / Debianos gépre (vagy Macre, <code>sudo</code> nélkül):
+<pre><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.sh | sudo bash</code></pre></li>
   <li><b>Nyisd meg az admin felületet</b> a telepítő által kiírt címen (<code>http://SZERVER-IP:8080/admin/</code>), válassz nyelvet, és hozd létre az admin fiókot. Egy alap lejátszási lista minta tartalmakkal automatikusan létrejön.</li>
   <li><b>Telepítsd a lejátszót</b> minden kijelző gépre:
 <pre><code>curl -fsSL http://SZERVER-IP:8080/install-player.sh | sudo bash</code></pre></li>
@@ -38,8 +36,10 @@ sudo ./install/install-server.sh</code></pre></li>
 
 <section id="server">
 <h2>A szerver telepítése</h2>
-<p>A telepítőt a letöltött projekt mappájából futtasd:</p>
-<pre><code>sudo ./install/install-server.sh [--port 8080] [--data /var/lib/narancs-signage]</code></pre>
+<p>Az egysoros telepítő letölti a legfrissebb kiadást a GitHubról, és lefuttatja a szerver telepítőt. A kapcsolók a <code>bash -s --</code> után jönnek:</p>
+<pre><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.sh | sudo bash -s -- [--port 8080] [--data /var/lib/narancs-signage]</code></pre>
+<p>Klónozott projekt mappából ugyanez: <code>sudo ./install/install-server.sh [kapcsolók]</code>.</p>
+<p class="note"><b>macOS:</b> ugyanez a parancs <code>sudo</code> nélkül. Ha kell, Homebrew-val telepíti a Node.js-t, és bejelentkezéskor elindítja a szervert (LaunchAgent). Adatok: <code>~/Library/Application Support/Narancs Signage/data</code>, napló: <code>~/Library/Logs/narancs-signage.log</code>. Más rendszeren: Docker.</p>
 <table>
   <tr><th>Kapcsoló</th><th>Alapérték</th><th>Leírás</th></tr>
   <tr><td><code>--port</code></td><td>8080</td><td>A szerver HTTP portja.</td></tr>
@@ -290,8 +290,8 @@ npm run dev</code></pre>
   <tr><td>Újraindítás</td><td><code>sudo systemctl restart narancs-signage</code></td></tr>
   <tr><td>Kézi mentés</td><td><code>sudo signage-backup</code></td></tr>
   <tr><td>Jelszó visszaállítása</td><td><code>sudo signage-reset-password FELHASZNÁLÓNÉV</code> (a <code>--admin</code> kapcsolóval adminisztrátor is lesz)</td></tr>
-  <tr><td>Frissítés</td><td><code>git pull &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
-  <tr><td>Adott verzió telepítése</td><td><code>git checkout v1.9.7 &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
+  <tr><td>Frissítés</td><td><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.sh | sudo bash</code></td></tr>
+  <tr><td>Adott verzió telepítése</td><td><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/download/v1.18.0/install.sh | sudo bash</code></td></tr>
   <tr><td>Adatok</td><td><code>/var/lib/narancs-signage</code> (<code>signage.db</code> + <code>media/</code>)</td></tr>
 </table>
 

@@ -23,10 +23,8 @@
 <section id="quickstart">
 <h2>Quick start</h2>
 <ol class="steps-list">
-  <li><b>Install the server</b> on an Ubuntu machine:
-<pre><code>git clone https://github.com/mzzg-bazsi/narancs-signage.git
-cd narancs-signage
-sudo ./install/install-server.sh</code></pre></li>
+  <li><b>Install the server</b> on an Ubuntu / Debian machine (or a Mac, without <code>sudo</code>):
+<pre><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.sh | sudo bash</code></pre></li>
   <li><b>Open the admin panel</b> at the address the installer prints (<code>http://SERVER-IP:8080/admin/</code>), choose a language and create your admin account. A default playlist with sample content is created automatically.</li>
   <li><b>Install the player</b> on each display device:
 <pre><code>curl -fsSL http://SERVER-IP:8080/install-player.sh | sudo bash</code></pre></li>
@@ -38,8 +36,10 @@ sudo ./install/install-server.sh</code></pre></li>
 
 <section id="server">
 <h2>Server installation</h2>
-<p>Run the installer from the cloned project folder:</p>
-<pre><code>sudo ./install/install-server.sh [--port 8080] [--data /var/lib/narancs-signage]</code></pre>
+<p>The one-line installer downloads the latest release from GitHub and runs the server installer. Options go after <code>bash -s --</code>:</p>
+<pre><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.sh | sudo bash -s -- [--port 8080] [--data /var/lib/narancs-signage]</code></pre>
+<p>From a cloned project folder the same installer runs as <code>sudo ./install/install-server.sh [options]</code>.</p>
+<p class="note"><b>macOS:</b> run the same command without <code>sudo</code>. It installs Node.js with Homebrew if needed and starts the server at login (LaunchAgent). Data: <code>~/Library/Application Support/Narancs Signage/data</code>, log: <code>~/Library/Logs/narancs-signage.log</code>. Other systems: use Docker.</p>
 <table>
   <tr><th>Option</th><th>Default</th><th>Description</th></tr>
   <tr><td><code>--port</code></td><td>8080</td><td>HTTP port of the server.</td></tr>
@@ -290,8 +290,8 @@ npm run dev</code></pre>
   <tr><td>Restart</td><td><code>sudo systemctl restart narancs-signage</code></td></tr>
   <tr><td>Manual backup</td><td><code>sudo signage-backup</code></td></tr>
   <tr><td>Reset a password</td><td><code>sudo signage-reset-password USERNAME</code> (add <code>--admin</code> to make the user an administrator)</td></tr>
-  <tr><td>Update</td><td><code>git pull &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
-  <tr><td>Install a specific version</td><td><code>git checkout v1.9.7 &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
+  <tr><td>Update</td><td><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.sh | sudo bash</code></td></tr>
+  <tr><td>Install a specific version</td><td><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/download/v1.18.0/install.sh | sudo bash</code></td></tr>
   <tr><td>Data</td><td><code>/var/lib/narancs-signage</code> (<code>signage.db</code> + <code>media/</code>)</td></tr>
 </table>
 

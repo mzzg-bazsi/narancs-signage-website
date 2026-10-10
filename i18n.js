@@ -234,7 +234,7 @@
     "Touch-screen form": "Érintőképernyős űrlap",
     "Up and running in minutes": "Percek alatt működik",
     "Server": "Szerver",
-    "Ubuntu 22.04 / 24.04, amd64 or arm64": "Ubuntu 22.04 / 24.04, amd64 vagy arm64",
+    "Ubuntu / Debian, amd64 or arm64": "Ubuntu / Debian, amd64 vagy arm64",
     "Copy": "Másolás",
     "Copied": "Másolva",
     "Select & copy": "Jelöld ki és másold",
