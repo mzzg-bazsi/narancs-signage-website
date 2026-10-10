@@ -2,6 +2,7 @@
    Elsőbbség: ?lang= → elmentett választás → böngésző nyelve. */
 (() => {
   const HU = {
+    "Programmed entirely by <a href=\"https://claude.com/claude-code\">Claude</a> (Anthropic)": "Teljes egészében a <a href=\"https://claude.com/claude-code\">Claude</a> (Anthropic) programozta",
     "Read the full documentation →": "A teljes dokumentáció →",
     "Docs": "Dokumentáció",
     "Contents": "Tartalom",

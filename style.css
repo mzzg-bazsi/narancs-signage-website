@@ -170,6 +170,7 @@ body:has(.lightbox[open]) { overflow: hidden; }
 .lb-close { right: 14px; top: 14px; font-size: 26px; }
 .gallery a { cursor: zoom-in; display: block; }
 
+footer .built-with { flex-basis: 100%; font-size: 13px; }
 footer { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; text-align: center; padding: 36px 16px 48px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); }
 
 @media (max-width: 1020px) {

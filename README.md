@@ -17,3 +17,5 @@ node tools/build-demo.mjs ../signage
 ```
 
 © 2026 Balázs Mazzag – [Narancs Signage License](LICENSE)
+
+Programmed entirely by [Claude](https://claude.com/claude-code) (Anthropic) with Claude Code.
