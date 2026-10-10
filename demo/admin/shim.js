@@ -61,6 +61,16 @@
         const r = await realFetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q.get('q') || '')}&count=6&language=${S.lang}&format=json`);
         return ((await r.json()).results || []).map((x) => ({ name: x.name, country: x.country, admin: x.admin1, lat: x.latitude, lon: x.longitude }));
       }
+      case 'reports': return d.reports || { totals: { views: 0, touches: 0, screens: 0, slides: 0 }, by_slide: [], by_screen: [], by_day: [] };
+      case 'tokens':
+        if (method === 'POST') fail(HU ? 'API kulcs a bemutatóban nem hozható létre.' : 'API keys cannot be created in the demo.');
+        if (method === 'DELETE') { d.tokens = (d.tokens || []).filter((x) => String(x.id) !== id); S.save(); }
+        return d.tokens || [];
+      case 'users':
+        if (method === 'POST') { if (!body.username) fail(HU ? 'Érvénytelen felhasználónév' : 'Invalid username'); d.users.push({ id: nextId(d.users), username: body.username, role: body.role || 'editor', created_at: now() }); }
+        if (method === 'PUT') Object.assign(find(), { role: body.role });
+        if (method === 'DELETE') d.users = d.users.filter((x) => String(x.id) !== id);
+        S.save(); return d.users;
       case 'media': if (method === 'POST') fail(); break;
       case 'rss-test': case 'samples': case 'backup': case 'account': fail();
     }

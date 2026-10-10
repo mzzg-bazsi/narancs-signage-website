@@ -38,6 +38,8 @@
     return el;
   }
   const ICONS = {
+    chart: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+    camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
     dashboard: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
     screen: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
     playlist: '<path d="M3 6h13M3 12h13M3 18h8"/><path d="M17 15v6l4-3z" fill="currentColor"/>',
@@ -162,6 +164,7 @@
     qr: { e: '🔳', name: tr('QR kód'), desc: tr('Beolvasható link (pl. Wi-Fi, menü, weboldal)'), duration: 12, defaults: { url: 'https://', title: tr('Olvasd be a telefonoddal!'), text: '' } },
     web: { e: '🌐', name: tr('Weboldal'), desc: tr('Külső weboldal vagy dashboard beágyazása'), duration: 30, defaults: { url: 'https://', zoom: 100, interactive: false, reload_sec: 0 } },
     pdf: { e: '📄', name: 'PDF', desc: tr('PDF dokumentum megjelenítése'), duration: 20, defaults: { media_id: null, page: 1 } },
+    zones: { e: '🔲', name: tr('Osztott képernyő'), desc: tr('Több tartalom egyszerre, zónákra osztva'), duration: 30, defaults: { layout: 'right', size: 30, gap: false, zones: [] } },
     html: { e: '🧩', name: tr('Egyedi HTML'), desc: tr('Saját HTML/CSS/JS kód'), duration: 15, defaults: { html: '<!doctype html>\n<html><body style="margin:0;display:grid;place-items:center;height:100vh;background:#f59e5b;font:700 8vmin sans-serif;color:#3b1a05">\n  ' + tr('Helló, signage!') + ' 👋\n</body></html>' } },
   };
   const TRANSITIONS = [['fade', tr('Áttűnés')], ['slide', tr('Becsúszás')], ['zoom', tr('Nagyítás')], ['up', tr('Felúszás')], ['none', tr('Nincs')]];
@@ -449,6 +452,8 @@
   const builtWith = () => h('a', { class: 'built-with', href: 'https://claude.com/claude-code', target: '_blank', rel: 'noopener' }, tr('Teljes egészében a Claude programozta'));
 
   let ME = null;
+  const ROLE_NAMES = { admin: tr('Adminisztrátor'), editor: tr('Szerkesztő'), viewer: tr('Megtekintő') };
+  const isAdmin = () => (ME?.role || 'admin') === 'admin';
   function authScreen(setup) {
     const data = { username: setup ? 'admin' : '', password: '', password2: '', org_name: '', language: I18N.lang };
     const err = h('div', { class: 'err' });
@@ -484,23 +489,25 @@
   //  Keret és útválasztás
   // =====================================================================
   const NAV = [
-    [tr('Áttekintés'), [['dashboard', tr('Irányítópult'), 'dashboard'], ['screens', tr('Képernyők'), 'screen']]],
+    [tr('Áttekintés'), [['dashboard', tr('Irányítópult'), 'dashboard'], ['screens', tr('Képernyők'), 'screen'], ['reports', tr('Riportok'), 'chart']]],
     [tr('Tartalom'), [['playlists', tr('Lejátszási listák'), 'playlist'], ['slides', tr('Tartalmak'), 'slides'], ['media', tr('Médiatár'), 'media']]],
     [tr('Interaktív'), [['calendars', tr('Naptárak'), 'calendar'], ['forms', tr('Űrlapok'), 'form']]],
     [tr('Rendszer'), [['branding', tr('Arculat'), 'palette'], ['alerts', tr('Vészjelzés'), 'alert'], ['settings', tr('Beállítások'), 'settings']]],
   ];
   function shell() {
-    const nav = h('nav', { class: 'nav' }, NAV.map(([sec, items]) => [h('div', { class: 'nav-section' }, sec), items.map(([r, l, ic]) => h('a', { href: `#/${r}`, 'data-r': r }, icon(ic), l, h('span', { class: 'count hidden', 'data-count': r })))]));
+    // az arculat a rendszerbeállítások része → csak adminisztrátornak
+    const nav = h('nav', { class: 'nav' }, NAV.map(([sec, items]) => [h('div', { class: 'nav-section' }, sec), items.filter(([r]) => r !== 'branding' || isAdmin()).map(([r, l, ic]) => h('a', { href: `#/${r}`, 'data-r': r }, icon(ic), l, h('span', { class: 'count hidden', 'data-count': r })))]));
     const sidebar = h('aside', { class: 'sidebar' },
       h('div', { class: 'brand' }, ME.logo_url ? h('img', { class: 'logo-img', src: ME.logo_url, alt: '' }) : h('div', { class: 'logo' }, h('img', { src: '../shared/splash/logo.svg', alt: '' })), h('div', {}, ME.org_name || 'Narancs Signage', h('small', {}, 'Narancs Signage'))),
       nav,
-      h('div', { class: 'bottom' }, h('div', { class: 'avatar' }, ME.username[0].toUpperCase()), h('div', { class: 'who' }, ME.username, h('small', {}, tr('Adminisztrátor'))),
+      h('div', { class: 'bottom' }, h('div', { class: 'avatar' }, ME.username[0].toUpperCase()), h('div', { class: 'who' }, ME.username, h('small', {}, ROLE_NAMES[ME.role] || ROLE_NAMES.admin)),
         btn('', toggleTheme, { cls: 'ghost icon', ic: 'moon', title: tr('Sötét/világos mód') }),
         btn('', async () => { await POST('/api/auth/logout'); boot(); }, { cls: 'ghost icon', ic: 'logout', title: tr('Kijelentkezés') })),
       h('div', { class: 'copyright' }, COPYRIGHT, h('br'), builtWith()));
     nav.addEventListener('click', () => sidebar.classList.remove('open'));
     $('#app').replaceChildren(
       h('div', { class: 'mobile-bar' }, btn('', () => sidebar.classList.toggle('open'), { cls: 'ghost icon', ic: 'menu' }), 'Narancs Signage'),
+      ME.role === 'viewer' ? h('div', { class: 'role-banner' }, tr('👁️ Megtekintő vagy: mindent láthatsz, de módosítani nem tudsz.')) : null,
       h('div', { class: 'layout' }, sidebar, h('main', { class: 'main', id: 'view' })));
   }
   function toggleTheme() {
@@ -513,7 +520,7 @@
 
   const ROUTES = {
     dashboard: pageDashboard, screens: pageScreens, playlists: pagePlaylists, slides: pageSlides, media: pageMedia,
-    calendars: pageCalendars, forms: pageForms, alerts: pageAlerts, settings: pageSettings, branding: pageBranding,
+    calendars: pageCalendars, forms: pageForms, alerts: pageAlerts, settings: pageSettings, branding: pageBranding, reports: pageReports,
   };
   let routeCleanup = null;
   let dirty = null; // nem mentett változások figyelése
@@ -574,6 +581,51 @@
   // =====================================================================
   //  Irányítópult
   // =====================================================================
+  // =====================================================================
+  //  Riportok: mi, hol, hányszor ment le (proof of play)
+  // =====================================================================
+  const reportFilter = { from: '', to: '', screen_id: '' };
+  async function pageReports(view) {
+    const ymd = (t) => { const d = new Date(t); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+    if (!reportFilter.to) { reportFilter.to = ymd(Date.now()); reportFilter.from = ymd(Date.now() - 6 * 864e5); }
+    const { screens } = await GET('/api/screens');
+    const qs = () => new URLSearchParams(Object.entries(reportFilter).filter(([, v]) => v)).toString();
+    const d = await GET(`/api/reports?${qs()}`);
+    const preset = (n) => () => { reportFilter.to = ymd(Date.now()); reportFilter.from = ymd(Date.now() - (n - 1) * 864e5); route(); };
+    const thisMonth = () => { const n = new Date(); reportFilter.from = ymd(new Date(n.getFullYear(), n.getMonth(), 1)); reportFilter.to = ymd(n); route(); };
+    const filters = h('div', { class: 'card card-pad report-filters' },
+      F.text(tr('Ettől'), reportFilter, 'from', { type: 'date', onchange: route }),
+      F.text(tr('Eddig'), reportFilter, 'to', { type: 'date', onchange: route }),
+      F.select(tr('Képernyő'), reportFilter, 'screen_id', [['', tr('Minden képernyő')], ...screens.map((x) => [String(x.id), x.name])], { onchange: route }),
+      h('div', { class: 'row', style: { alignSelf: 'end' } }, btn(tr('7 nap'), preset(7), { cls: 'sm' }), btn(tr('30 nap'), preset(30), { cls: 'sm' }), btn(tr('Ez a hónap'), thisMonth, { cls: 'sm' })));
+    // napi oszlopdiagram az egész időszakra
+    const days = [];
+    for (let t = new Date(`${reportFilter.from}T12:00`); ymd(t) <= reportFilter.to && days.length < 400; t.setDate(t.getDate() + 1)) days.push(ymd(t));
+    const byDay = Object.fromEntries(d.by_day.map((x) => [x.day, x]));
+    const max = Math.max(1, ...days.map((k) => (byDay[k]?.views || 0) + (byDay[k]?.touches || 0)));
+    const bars = h('div', { class: 'bars report-bars' }, days.map((k) => {
+      const v = byDay[k]?.views || 0, t = byDay[k]?.touches || 0;
+      return h('div', { class: 'b', title: `${new Date(`${k}T12:00`).toLocaleDateString(LOCALE, { month: 'short', day: 'numeric' })}: ${tr('{v} megjelenés, {t} érintés', { v, t })}` }, h('div', { class: 'col', style: { height: `${((v + t) / max) * 100}%` } },
+        h('i', { style: { flex: v || 0 } }), h('i', { class: 't', style: { flex: t || 0 } })), days.length <= 14 ? h('small', {}, I18N.dayShort(new Date(k).getDay())) : null);
+    }));
+    const total = d.totals.views || 1;
+    const table = (rows, label, nameCell) => rows.length ? h('table', { class: 'table' },
+      h('thead', {}, h('tr', {}, h('th', {}, '#'), h('th', {}, label), h('th', { class: 'num' }, tr('Megjelenés')), h('th', { class: 'num' }, tr('Érintés')), h('th', { class: 'num' }, tr('Arány')))),
+      h('tbody', {}, rows.map((x, i) => h('tr', {}, h('td', { class: 'muted' }, i + 1), h('td', {}, nameCell(x)), h('td', { class: 'num' }, x.views), h('td', { class: 'num' }, x.touches),
+        h('td', { class: 'num' }, h('div', { class: 'share' }, h('b', {}, h('i', { style: { width: `${(x.views / total) * 100}%` } })), h('span', {}, `${Math.round((x.views / total) * 100)}%`))))))) : h('div', { class: 'empty small' }, tr('Ebben az időszakban nincs adat'));
+    const stat = (ic, v, l) => h('div', { class: 'card stat' }, h('div', { class: 'ic' }, icon(ic)), h('div', {}, h('div', { class: 'v' }, v), h('div', { class: 'l' }, l)));
+    view.replaceChildren(
+      head(tr('Riportok'), tr('Mi, hol és hányszor jelent meg a képernyőkön (lejátszási igazolás).'),
+        [h('a', { class: 'btn', href: `/api/reports/export.csv?${qs()}` }, icon('download'), tr('CSV letöltése'))]),
+      filters,
+      h('div', { class: 'grid c4' }, stat('eye', d.totals.views, tr('Megjelenés')), stat('touch', d.totals.touches, tr('Érintés')), stat('screen', d.totals.screens, tr('Aktív képernyő')), stat('slides', d.totals.slides, tr('Lejátszott tartalom'))),
+      h('div', { class: 'card mt' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Napi aktivitás')), h('div', { class: 'legend' }, h('span', {}, h('i', { style: { background: 'var(--primary)' } }), tr('Megjelenés')), h('span', {}, h('i', { style: { background: '#ffc9a1' } }), tr('Érintés')))), h('div', { class: 'card-body' }, bars)),
+      h('div', { class: 'grid c2 mt' },
+        h('div', { class: 'card table-wrap' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Tartalmak szerint'))), table(d.by_slide, tr('Tartalom'), (x) => x.type ? h('a', { href: `#/slides/${x.slide_id}` }, `${TYPES[x.type]?.e || ''} ${x.name}`) : h('span', { class: 'muted' }, x.name))),
+        h('div', { class: 'card table-wrap' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Képernyők szerint'))), table(d.by_screen, tr('Képernyő'), (x) => x.name))),
+      h('p', { class: 'small muted mt' }, tr('A kijelzők minden tartalom megjelenését és minden érintést rögzítenek; az adatok 90 napig maradnak meg. A CSV export soronként egy eseményt tartalmaz időponttal.')));
+  }
+
   async function pageDashboard(view) {
     const d = await GET('/api/dashboard');
     await load('media');
@@ -703,11 +755,50 @@
     const m = modal({
       title: all ? tr('Összes képernyő vezérlése') : tr('Vezérlés: {name}', { name: screen.name }),
       body: h('div', {}, quick, h('div', { class: 'card' },
+        all ? null : h('div', { class: 'list-item', style: { opacity: agentOk ? 1 : 0.55 } },
+          h('div', { class: 'stat', style: { padding: 0 } }, h('div', { class: 'ic' }, icon('camera'))),
+          h('div', { class: 'grow' }, h('b', {}, tr('Képernyőkép')), h('div', { class: 'small muted' }, tr('Mi látszik most a valódi kijelzőn? Pár másodperc.')), agentOk ? null : h('div', { class: 'small', style: { color: 'var(--danger)' } }, noAgent)),
+          btn(tr('Megnézem'), () => { m.close(); screenshotDialog(screen); }, { cls: 'sm primary', disabled: !agentOk })),
         option('refresh', tr('Oldal újratöltése'), tr('A lejátszó oldal frissül, a böngésző fut tovább. Pár másodperc.'), 'reload', all || screen.online),
         option('screen', tr('Lejátszó újraindítása'), tr('A böngésző teljesen újraindul, közben a logós indulóképernyő látszik. Kb. 10 másodperc.'), 'restart', agentOk, agentOk ? null : noAgent),
         option('power', tr('Eszköz újraindítása'), tr('A teljes kijelző eszköz (számítógép) újraindul. Kb. 1 perc.'), 'reboot', agentOk, agentOk ? null : noAgent))),
       foot: [btn(tr('Bezárás'), () => m.close())],
     });
+  }
+
+  // Képernyőkép a kijelzőről: az ügynök készíti és tölti fel, mi addig várunk, amíg frissebb kép érkezik
+  function screenshotDialog(screen) {
+    const img = h('img', { class: 'shot', alt: tr('Képernyőkép: {name}', { name: screen.name }) });
+    const status = h('div', { class: 'small muted' });
+    const url = () => `/api/screens/${screen.id}/screenshot?t=${Date.now()}`;
+    let prev = screen.info?.screenshot_at || 0;
+    if (prev) { img.src = url(); status.textContent = tr('Korábbi kép: {t}', { t: fmtDate(prev) }); }
+    let busy = false;
+    const take = async () => {
+      if (busy) return;
+      busy = true;
+      status.textContent = tr('Képernyőkép kérése…');
+      try {
+        const r = await POST(`/api/screens/${screen.id}/command`, { command: 'screenshot' });
+        if (!r.delivered) { status.textContent = tr('A kijelző ügynöke jelenleg nem érhető el.'); return; }
+        for (let i = 0; i < 20; i++) {
+          await new Promise((ok) => setTimeout(ok, 1000));
+          const s = (await GET('/api/screens')).screens.find((x) => x.id === screen.id);
+          if ((s?.info?.screenshot_at || 0) > prev) {
+            prev = s.info.screenshot_at; img.src = url();
+            status.textContent = tr('Készült: {t}', { t: fmtDate(prev) });
+            return;
+          }
+        }
+        status.textContent = tr('Nem érkezett kép. Ha a kijelzőn régebbi a lejátszó, futtasd újra rajta a telepítőt.');
+      } catch (e) { fail(e); } finally { busy = false; }
+    };
+    const m = modal({
+      title: tr('Képernyőkép: {name}', { name: screen.name }), size: 'wide',
+      body: h('div', { class: 'stack' }, h('div', { class: 'shot-box' }, img), status),
+      foot: [btn(tr('Új kép'), take, { ic: 'refresh' }), btn(tr('Bezárás'), () => m.close())],
+    });
+    take();
   }
 
   async function pageScreens(view) {
@@ -1170,6 +1261,7 @@
             F.color(tr('Gomb színe (üres = téma)'), b, 'color', { def: '#f59e5b', onchange: ch }), F.color(tr('Szöveg színe (üres = téma)'), b, 'text_color', { def: '#3b1a05', onchange: ch })),
           F.media(tr('Háttérkép a gombon'), b, 'media_id', { accept: 'image/', onchange: ch }),
         ], () => ({ icon: '✨', label: tr('Új gomb') }), ch));
+      case 'zones': return zonesEditor(d, ctx);
       case 'form': return f(
         forms.length ? F.select(tr('Űrlap'), d, 'form_id', [['', tr('— válassz —')], ...forms.map((x) => [x.id, x.name])], { number: true, full: true, onchange: ch })
           : h('div', { class: 'full' }, tr('Még nincs űrlap. '), h('a', { href: '#/forms' }, tr('Hozz létre egyet az Űrlapok menüben →'))),
@@ -1234,6 +1326,44 @@
         F.textarea(tr('HTML kód'), d, 'html', { code: true, rows: 14, onchange: ch, hint: tr('Elszigetelt keretben fut (sandbox). Külső scripteket és API-kat is használhatsz.') }));
       default: return h('div', {}, tr('Ehhez a típushoz nincs szerkesztő.'));
     }
+  }
+
+  // Osztott képernyő: elrendezés választó (kis rajzzal) és zónánként a lejátszandó tartalmak
+  function zonesEditor(d, ctx) {
+    const Z = SIGNAGE_ZONES, ch = ctx.onchange;
+    const pick = ctx.slides.filter((x) => x.type !== 'zones' && x.id !== ctx.self);
+    const zonesBox = h('div', { class: 'full stack', style: { gap: '12px' } });
+    const sizeBox = h('div');
+    const layouts = h('div', { class: 'zone-layouts' });
+    const drawLayouts = () => layouts.replaceChildren(...Object.entries(Z.LAYOUTS).map(([k, L]) => {
+      const mini = h('div', { class: 'zl-mini' }, L.zones.map((_, i) => h('i', { style: { gridArea: Z.AREAS[i] } }, String(i + 1))));
+      Object.assign(mini.style, Z.gridStyle(k, d.size));
+      return h('button', { type: 'button', class: `zl${(d.layout || 'right') === k ? ' on' : ''}`, title: tr(L.name), onclick: () => { d.layout = k; drawLayouts(); draw(); ch(); } }, mini, h('span', {}, tr(L.name)));
+    }));
+    const draw = () => {
+      const L = Z.LAYOUTS[d.layout] || Z.LAYOUTS.right;
+      d.zones ||= [];
+      while (d.zones.length < L.zones.length) d.zones.push({ items: [] });
+      sizeBox.replaceChildren(L.sized ? F.number(tr('Mellékzóna mérete (%)'), d, 'size', { min: 15, max: 50, onchange: () => { drawLayouts(); ch(); }, hint: tr('15–50%; az oldalsáv vagy a sáv mérete') }) : null);
+      zonesBox.replaceChildren(...L.zones.map((zname, i) => {
+        const z = d.zones[i];
+        z.transition ||= 'fade';
+        return h('div', { class: 'sub-item' },
+          h('div', { class: 'sub-head' }, h('b', {}, `${i + 1}. ${tr(zname)}`)),
+          h('div', { class: 'stack', style: { gap: '10px' } },
+            F.select(tr('Áttűnés a zónán belül'), z, 'transition', TRANSITIONS, { onchange: ch }),
+            subList(tr('Tartalmak (sorban váltakoznak)'), z, 'items', (it) => [
+              F.select(tr('Tartalom'), it, 'slide_id', [['', tr('— válassz —')], ...pick.map((x) => [x.id, `${TYPES[x.type]?.e || ''} ${x.name}`])], { number: true, onchange: ch }),
+            ], () => ({ slide_id: null }), ch)));
+      }));
+    };
+    drawLayouts(); draw();
+    return h('div', { class: 'fields' },
+      F.wrap(tr('Elrendezés'), layouts, { full: true }),
+      sizeBox,
+      F.toggle(tr('Rés a zónák között'), d, 'gap', { onchange: ch }),
+      h('div', { class: 'full small muted', style: { background: 'var(--primary-softer)', padding: '10px 12px', borderRadius: '10px' } }, tr('💡 Minden zónába tegyél egy vagy több meglévő tartalmat – a zónán belül a saját megjelenési idejük szerint váltakoznak. Például: fő területen képváltó, oldalsávon óra és időjárás, alul hírfolyam.')),
+      zonesBox);
   }
 
   function subList(label, obj, key, fields, make, ch) {
@@ -1348,13 +1478,15 @@
     const evList = h('div');
     const drawEvents = () => {
       const now = Date.now() - 864e5;
-      const upcoming = events.filter((e) => Date.parse(e.end || e.start) >= now);
-      const past = events.filter((e) => Date.parse(e.end || e.start) < now);
+      // ismétlődő esemény addig „közelgő”, amíg a sorozat tart
+      const isUpcoming = (e) => Date.parse(e.end || e.start) >= now || (e.rrule && !(/UNTIL=(\d{8})/.exec(e.rrule)?.[1] < new Date(now).toISOString().slice(0, 10).replace(/-/g, '')));
+      const upcoming = events.filter(isUpcoming);
+      const past = events.filter((e) => !isUpcoming(e));
       const row = (e) => {
         const st = new Date(e.start.length === 10 ? e.start + 'T00:00' : e.start);
         return h('div', { class: 'cal-ev-row' },
           h('div', { class: 'date' }, h('b', {}, st.getDate()), h('small', {}, st.toLocaleDateString(LOCALE, { month: 'short' }))),
-          h('div', { class: 'grow' }, h('b', {}, e.title),
+          h('div', { class: 'grow' }, h('b', {}, e.title, e.rrule ? h('span', { class: 'muted', title: tr('Ismétlődő esemény') }, ' 🔁') : null),
             h('div', { class: 'small muted' }, e.all_day ? tr('Egész nap') : `${st.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' })} – ${new Date(e.end).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' })}`, e.location ? ` · 📍 ${e.location}` : '')),
           btn('', () => eventDialog(c, e, events, drawEvents), { cls: 'sm icon ghost', ic: 'edit' }),
           btn('', async () => { if (!(await confirmBox(tr('Törlöd: „{name}”?', { name: e.title }), { ok: tr('Törlés') }))) return; await DEL(`/api/events/${e.id}`); events.splice(events.indexOf(e), 1); drawEvents(); }, { cls: 'sm icon ghost', ic: 'trash' }));
@@ -1383,6 +1515,9 @@
     const now = new Date(); now.setMinutes(0, 0, 0); now.setHours(now.getHours() + 1);
     const e = ev ? clone(ev) : { calendar_id: cal.id, title: '', location: '', description: '', all_day: 0, start: now.toISOString(), end: new Date(now.getTime() + 3600e3).toISOString() };
     const v = { start: e.all_day ? e.start.slice(0, 10) : toLocalInput(e.start), end: e.all_day ? e.end.slice(0, 10) : toLocalInput(e.end), all_day: !!e.all_day };
+    // ismétlődés: FREQ=…;UNTIL=ÉÉÉÉHHNN formában tároljuk
+    const rr = Object.fromEntries((e.rrule || '').split(';').filter(Boolean).map((p) => p.split('=')));
+    const rv = { freq: rr.FREQ || '', until: rr.UNTIL ? `${rr.UNTIL.slice(0, 4)}-${rr.UNTIL.slice(4, 6)}-${rr.UNTIL.slice(6, 8)}` : '' };
     const times = h('div', { class: 'fields full' });
     const drawTimes = () => {
       const type = v.all_day ? 'date' : 'datetime-local';
@@ -1395,6 +1530,8 @@
       body: h('div', { class: 'fields' },
         F.text(tr('Megnevezés'), e, 'title', { full: true }),
         F.toggle(tr('Egész napos'), v, 'all_day', { full: true, onchange: drawTimes }), times,
+        F.select(tr('Ismétlődés'), rv, 'freq', [['', tr('Nem ismétlődik')], ['DAILY', tr('Naponta')], ['WEEKLY', tr('Hetente')], ['MONTHLY', tr('Havonta')], ['YEARLY', tr('Évente')]]),
+        F.text(tr('Ismétlődés vége (opcionális)'), rv, 'until', { type: 'date' }),
         F.text(tr('Helyszín'), e, 'location', { full: true }),
         F.textarea(tr('Leírás'), e, 'description', { rows: 2 })),
       foot: [btn(tr('Mégse'), () => m.close()), btn(tr('Mentés'), async () => {
@@ -1403,6 +1540,7 @@
         e.start = v.all_day ? v.start : new Date(v.start).toISOString();
         e.end = v.all_day ? (v.end || v.start) : new Date(v.end || v.start).toISOString();
         if (e.end < e.start) return toast(tr('A befejezés nem lehet a kezdés előtt'), 'err');
+        e.rrule = rv.freq ? `FREQ=${rv.freq}${rv.until ? `;UNTIL=${rv.until.replace(/-/g, '')}` : ''}` : '';
         try {
           const saved = ev ? await PUT(`/api/events/${e.id}`, e) : await POST('/api/events', e);
           if (ev) Object.assign(ev, saved); else events.push(saved);
@@ -1709,24 +1847,35 @@
   //  Beállítások
   // =====================================================================
   async function pageSettings(view) {
-    const [st, users] = await Promise.all([GET('/api/settings'), GET('/api/users'), load('media')]);
+    const admin = isAdmin();
+    const [st, users, tokens] = await Promise.all([GET('/api/settings'), admin ? GET('/api/users') : [], admin ? GET('/api/tokens') : [], load('media')]);
     const pw = { current: '', password: '', password2: '' };
-    const nu = { username: '', password: '' };
+    const nu = { username: '', password: '', role: 'editor' };
+    const nt = { name: '', role: 'editor' };
+    const roleOpts = Object.entries(ROLE_NAMES);
     const lang = { v: st.language || I18N.lang };
     const usersBox = h('div');
     const drawUsers = (list) => usersBox.replaceChildren(...list.map((u) => h('div', { class: 'list-item' }, h('div', { class: 'avatar' }, u.username[0].toUpperCase()), h('div', { class: 'grow' }, h('b', {}, u.username), h('div', { class: 'small muted' }, tr('Létrehozva: {t}', { t: fmtDate(u.created_at) }))),
+      u.id !== ME.id ? h('select', { class: 'input sm role-sel', title: tr('Szerepkör'), onchange: async (e) => { try { drawUsers(await PUT(`/api/users/${u.id}`, { role: e.target.value })); toast(tr('Szerepkör módosítva')); } catch (ex) { fail(ex); } } },
+        roleOpts.map(([k, l]) => h('option', { value: k, selected: (u.role || 'admin') === k }, l))) : h('span', { class: 'small muted' }, ROLE_NAMES[u.role || 'admin']),
       u.id !== ME.id ? btn('', async () => { if (!(await confirmBox(tr('Törlöd „{name}” felhasználót?', { name: u.username }), { ok: tr('Törlés') }))) return; drawUsers(await DEL(`/api/users/${u.id}`)); }, { cls: 'sm icon ghost', ic: 'trash' }) : h('span', { class: 'badge orange' }, tr('Te')))));
     drawUsers(users);
+    const tokensBox = h('div');
+    const drawTokens = (list) => tokensBox.replaceChildren(...(list.length ? list.map((t) => h('div', { class: 'list-item' }, h('div', { class: 'grow' }, h('b', {}, t.name),
+      h('div', { class: 'small muted' }, `${ROLE_NAMES[t.role]} · ${tr('létrehozta: {u}', { u: t.username })} · ${t.last_used ? tr('utoljára használva: {t}', { t: ago(t.last_used) }) : tr('még nem használták')}`)),
+      btn('', async () => { if (!(await confirmBox(tr('Visszavonod a(z) „{name}” kulcsot? Az ezt használó rendszerek nem érik el többé az API-t.', { name: t.name }), { ok: tr('Visszavonás') }))) return; drawTokens(await DEL(`/api/tokens/${t.id}`)); }, { cls: 'sm icon ghost', ic: 'trash', title: tr('Visszavonás') })))
+      : [h('div', { class: 'empty small' }, tr('Még nincs API kulcs'))]));
+    drawTokens(tokens);
     view.replaceChildren(
       head(tr('Beállítások'), `Narancs Signage v${st.version} · Node ${st.node}`),
       h('div', { class: 'grid c2' },
-        h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Nyelv'))),
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Nyelv'))),
           h('div', { class: 'card-body stack' },
             F.select(tr('A felület és a képernyők nyelve'), lang, 'v', Object.entries(I18N.LANGS), { onchange: async (v) => {
               try { await PUT('/api/settings', { language: v }); location.reload(); } catch (e) { fail(e); }
             } }),
             h('p', { class: 'small muted', style: { margin: 0 } }, tr('Az admin felület, a kijelzők feliratai (dátumok, gombok, billentyűzet) és az új tartalmak mintaszövegei ezen a nyelven jelennek meg. A már létrehozott tartalmak szövege nem változik.')))),
-        h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Szervezet és arculat'))),
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Szervezet és arculat'))),
           h('div', { class: 'card-body stack' },
             h('div', { class: 'row' }, ME.logo_url ? h('img', { src: ME.logo_url, style: { height: '44px', maxWidth: '140px', objectFit: 'contain' } }) : null, h('div', {}, h('b', {}, st.org_name), st.slogan ? h('div', { class: 'small muted' }, st.slogan) : null)),
             h('p', { class: 'small muted', style: { margin: 0 } }, tr('A szervezet neve, a logó, a színek, a betűtípusok és a képernyő fejléce az Arculat menüben állítható.')),
@@ -1739,17 +1888,35 @@
               if (pw.password !== pw.password2) return toast(tr('A két jelszó nem egyezik'), 'err');
               try { await POST('/api/account/password', pw); toast(tr('Jelszó módosítva')); } catch (e) { fail(e); }
             }, { cls: 'primary' })))),
-        h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Felhasználók'))), usersBox,
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Felhasználók'))), usersBox,
           h('div', { class: 'card-body row', style: { borderTop: '1px solid var(--border)', alignItems: 'flex-end' } },
             h('div', { class: 'grow' }, F.text(tr('Felhasználónév'), nu, 'username')), h('div', { class: 'grow' }, F.text(tr('Jelszó'), nu, 'password', { type: 'password' })),
+            h('div', {}, F.select(tr('Szerepkör'), nu, 'role', roleOpts)),
             btn(tr('Hozzáadás'), async () => { try { drawUsers(await POST('/api/users', nu)); toast(tr('Felhasználó létrehozva')); } catch (e) { fail(e); } }, { cls: 'primary', ic: 'plus' }))),
-        h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Minta tartalmak'))),
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('API kulcsok'))),
+          h('div', { class: 'card-body stack' },
+            h('p', { class: 'small muted', style: { margin: 0 } }, tr('Más rendszerek (pl. Home Assistant, Zapier, saját szkript) ezzel a kulccsal hívhatják az API-t – például vészjelzést küldhetnek. Fejléc: '), h('span', { class: 'code-pill' }, 'Authorization: Bearer ns_…')),
+            tokensBox,
+            h('div', { class: 'row', style: { alignItems: 'flex-end' } },
+              h('div', { class: 'grow' }, F.text(tr('Kulcs neve'), nt, 'name', { placeholder: tr('pl. Home Assistant') })),
+              h('div', {}, F.select(tr('Szerepkör'), nt, 'role', roleOpts)),
+              btn(tr('Kulcs létrehozása'), async () => {
+                try {
+                  const r = await POST('/api/tokens', nt);
+                  drawTokens(r.tokens); nt.name = '';
+                  const m = modal({ title: tr('Új API kulcs'), body: h('div', { class: 'stack' },
+                    h('p', { class: 'small' }, tr('Másold ki most – biztonsági okból később már nem jeleníthető meg.')),
+                    h('div', { class: 'code-pill', style: { userSelect: 'all', wordBreak: 'break-all', fontSize: '13px', padding: '10px' } }, r.token)),
+                  foot: [btn(tr('Másolás'), async () => { try { await navigator.clipboard.writeText(r.token); toast(tr('Kimásolva')); } catch { /* */ } }, { ic: 'copy' }), btn(tr('Kész'), () => m.close(), { cls: 'primary' })] });
+                } catch (e) { fail(e); }
+              }, { cls: 'primary', ic: 'plus' })))),
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Minta tartalmak'))),
           h('div', { class: 'card-body stack' },
             h('p', { class: 'small muted', style: { margin: 0 } }, tr('Egy új lejátszási lista bemutató tartalmakkal: üdvözlő hirdetmény, óra és időjárás, kártyák, naptár mintaeseményekkel, interaktív menü elégedettségi kérdőívvel és visszaszámláló. Az első telepítéskor ez automatikusan létrejön.')),
             h('div', {}, btn(tr('Minta tartalmak létrehozása'), async () => {
               try { const r = await POST('/api/samples'); invalidate('playlists', 'slides', 'forms', 'calendars'); toast(tr('Minta tartalmak létrehozva')); location.hash = `#/playlists/${r.playlist_id}`; } catch (e) { fail(e); }
             }, { ic: 'plus' })))),
-        h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Rendszer és mentés'))),
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Rendszer és mentés'))),
           h('div', { class: 'card-body stack' },
             h('div', { class: 'kv' }, tr('Adatkönyvtár: '), h('span', { class: 'code-pill' }, st.data_dir)),
             h('div', { class: 'kv' }, tr('Futásidő: '), h('b', {}, fmtDur(st.uptime))),
@@ -1758,6 +1925,7 @@
               btn(tr('Képernyők újratöltése'), async () => { const r = await POST('/api/screens/broadcast', { command: 'reload' }); toast(tr('{n} képernyő újratöltve', { n: r.count })); }, { ic: 'refresh' })),
             h('div', { class: 'small muted' }, tr('A teljes mentéshez (médiafájlokkal együtt) a szerveren futtasd: '), h('span', { class: 'code-pill' }, 'sudo signage-backup'))))),
     );
+    if (!admin) view.querySelectorAll('[data-admin]').forEach((el) => el.remove());
   }
 
   boot();

@@ -81,6 +81,11 @@ sudo ./install/install-server.sh</code></pre></li>
   proxy_set_header Host $host;
 }</code></pre>
 
+<h3 id="docker">Docker</h3>
+<p>Kész image amd64-re és arm64-re (bármilyen Linux, NAS, Synology, Unraid). Az adatok a <code>/data</code> kötetben vannak:</p>
+<pre><code>docker run -d --name narancs-signage -p 8080:8080 -v narancs-signage:/data -e TZ=Europe/Budapest --restart unless-stopped ghcr.io/mzzg-bazsi/narancs-signage:latest</code></pre>
+<p>Vagy a repóban lévő <code>docker-compose.yml</code>-lal: <code>docker compose up -d</code>. Frissítéshez töltsd le az új image-et, és hozd létre újra a konténert; az adatok a kötetben maradnak.</p>
+
 <h3 id="dev">Futtatás telepítő nélkül</h3>
 <p>Bármely gépen, ahol van Node.js ≥ 22.13 (macOS, Windows, Linux), közvetlenül is futtatható; nincs telepítendő függőség:</p>
 <pre><code>cd server
@@ -141,7 +146,8 @@ npm run dev</code></pre>
   <tr><td>Újratöltés</td><td>Újratölti a lejátszó oldalt (a lejátszó frissítései így jutnak ki).</td></tr>
   <tr><td>Gyorsítótár ürítése</td><td>Törli az offline gyorsítótárat és újratölt.</td></tr>
   <tr><td>Lejátszó újraindítása</td><td>Újraindítja a Chromium kioszkot (csak telepített lejátszón).</td></tr>
-  <tr><td>Eszköz újraindítása</td><td>Az egész gépet újraindítja (csak telepített lejátszón).</td></tr>
+  <tr><td>Eszköz újraindítása</td><td>Az egész gépet újraindítja (csak telepített lejátszón, adminisztrátornak).</td></tr>
+  <tr><td>Képernyőkép</td><td>Megmutatja, mi látszik éppen a valódi kijelzőn; az eszköz ügynöke készíti (csak telepített lejátszón).</td></tr>
 </table>
 <p>A <b>Szerkesztés</b> öt fülön nyitja meg a képernyő beállításait:</p>
 <table>
@@ -180,6 +186,7 @@ npm run dev</code></pre>
   <tr><td>🌐 Weboldal</td><td>Cím, nagyítás, érinthető vagy csak megjelenítés, időzített frissítés. Néhány oldal (Google, Facebook…) tiltja a beágyazást.</td></tr>
   <tr><td>📄 PDF</td><td>PDF a médiatárból és a megjelenítendő oldal.</td></tr>
   <tr><td>🧩 Egyedi HTML</td><td>Saját HTML/CSS/JS kód elszigetelt keretben.</td></tr>
+  <tr><td>🔲 Osztott képernyő</td><td>Több tartalom egyszerre, zónákra osztva. Elrendezések: oldalsáv jobbra/balra, alsó/felső sáv, L alak, két vagy három oszlop, 2 × 2 rács; állítható mellékzóna méret és rés. Minden zónában egy vagy több meglévő tartalom váltakozik a saját idejével — például fő területen képváltó, oldalsávon óra és időjárás, alul hírfolyam.</td></tr>
 </table>
 <p>Egy tartalomnál megnyithatod a teljes képernyős előnézetét, másolatot készíthetsz róla, és törlés előtt látod, mely listák használják.</p>
 
@@ -187,7 +194,7 @@ npm run dev</code></pre>
 <p>Képek (JPG, PNG, WebP, GIF), videók (MP4, WebM) és PDF-ek feltöltése húzással. Egy fájl legfeljebb 2 GB lehet (<code>MAX_UPLOAD_MB</code>). Minden fájlnak van közvetlen linkje; a lejátszók letöltik és eltárolják őket az offline működéshez.</p>
 
 <h3 id="calendars">Naptárak</h3>
-<p>Hozz létre naptárakat egy színnel (a téma valamelyik színe vagy egy előre megadott szín), és vegyél fel eseményeket kézzel, vagy importálj egy Google, Outlook vagy bármilyen iCal (<code>.ics</code>) linket. Az importált naptárak 15 percenként frissülnek, a <b>Frissítés</b> gombbal azonnal. Egész napos események is lehetnek. Az ismétlődő eseményeket (RRULE) nem bontja ki, csak az első előfordulás látszik.</p>
+<p>Hozz létre naptárakat egy színnel (a téma valamelyik színe vagy egy előre megadott szín), és vegyél fel eseményeket kézzel, vagy importálj egy Google, Outlook vagy bármilyen iCal (<code>.ics</code>) linket. Az importált naptárak 15 percenként frissülnek, a <b>Frissítés</b> gombbal azonnal. Egész napos események is lehetnek. Az <b>ismétlődő események</b> mindkét irányban működnek: az importált naptárak ismétlődési szabályait kibontja (napi, heti, havi — pl. „minden hónap utolsó péntekje” —, éves, kihagyott és áthelyezett alkalmakkal), a saját események pedig ismétlődhetnek naponta, hetente, havonta vagy évente, opcionális befejező dátummal.</p>
 
 <h3 id="forms">Űrlapok</h3>
 <p>Érintőképernyős űrlapok kérdőívekhez, jelentkezésekhez, vendégregisztrációhoz. Indulhatsz sablonból (elégedettségi kérdőív, kapcsolatfelvétel, vendégregisztráció) vagy üresen.</p>
@@ -206,10 +213,25 @@ npm run dev</code></pre>
 <h3 id="alerts">Vészjelzés</h3>
 <p>Azonnali teljes képernyős üzenet minden vagy csak a kiválasztott képernyőkön. Megadható a cím, az üzenet, a szint (információ, figyelmeztetés, veszély, siker) és a lejárat percben (vagy lejárat nélkül). Sablonok: tűzriadó, evakuálás, rövid szünet, gratuláció. Az aktív jelzések listájában egy gombbal leállíthatók; a képernyők a lejáratig vagy a leállításig mutatják.</p>
 
-<h3 id="settings">Beállítások és felhasználók</h3>
+<h3 id="reports">Riportok (lejátszási igazolás)</h3>
+<p>A <b>Riportok</b> menüben látod, mi, hol és hányszor ment le: megjelenések és érintések egy időszakra (7 nap, 30 nap, ez a hónap vagy tetszőleges dátumok), ha kell, egy képernyőre szűrve, napi diagrammal, tartalom és képernyő szerinti toplistával. A <b>CSV letöltése</b> minden eseményt exportál (időpont, képernyő, tartalom, típus, megjelenés/érintés) — például hirdetőknek. A kijelzők minden megjelenést és érintést rögzítenek; az adatok 90 napig maradnak meg.</p>
+
+<h3 id="roles">Felhasználók, szerepkörök és API kulcsok</h3>
+<table>
+  <tr><th>Szerepkör</th><th>Mit tehet</th></tr>
+  <tr><td>Adminisztrátor</td><td>Mindent, beleértve a felhasználókat, API kulcsokat, a nyelvet, az arculatot, a képernyők párosítását és törlését, az eszközök újraindítását és a mentést.</td></tr>
+  <tr><td>Szerkesztő</td><td>Tartalmak, lejátszási listák, média, naptárak, űrlapok, képernyő beállítások és parancsok (újraindítás kivételével), képernyőkép, vészjelzés, riportok.</td></tr>
+  <tr><td>Megtekintő</td><td>Mindent lát, semmit nem módosíthat (csak a saját jelszavát).</td></tr>
+</table>
+<p>Az <b>API kulcsokkal</b> (Beállítások → API kulcsok) más rendszerek — Home Assistant, Zapier, egy szkript — hívhatják az API-t a saját szerepkörükkel: <code>Authorization: Bearer ns_…</code> fejléccel. A kulcs csak létrehozáskor látszik egyszer, a szerver csak a hash-ét tárolja, és bármikor visszavonható. Példa — vészjelzés küldése:</p>
+<pre><code>curl -X POST http://SZERVER-IP:8080/api/alerts \
+  -H "Authorization: Bearer ns_…" -H "Content-Type: application/json" \
+  -d '{"title":"Tűzriadó","message":"Hagyja el az épületet","level":"danger","minutes":30}'</code></pre>
+
+<h3 id="settings">Beállítások</h3>
 <ul>
   <li>Az admin felület, a képernyők és a szerverüzenetek <b>nyelve</b> (angol vagy magyar).</li>
-  <li><b>Jelszó</b> módosítása és <b>felhasználók</b> kezelése: minden felhasználó teljes jogú adminisztrátor.</li>
+  <li><b>Jelszó</b> módosítása, <b>felhasználók</b> szerepkörökkel és <b>API kulcsok</b> (adminisztrátoroknak).</li>
   <li><b>Minta tartalmak</b>: az alap minta lista újbóli létrehozása.</li>
   <li><b>Rendszer és mentés</b>: adatkönyvtár, futásidő, lejátszó címe, adatbázis letöltése, összes képernyő újratöltése.</li>
 </ul>
@@ -236,6 +258,7 @@ npm run dev</code></pre>
   <tr><td>Napló</td><td><code>journalctl -u narancs-signage -f</code></td></tr>
   <tr><td>Újraindítás</td><td><code>sudo systemctl restart narancs-signage</code></td></tr>
   <tr><td>Kézi mentés</td><td><code>sudo signage-backup</code></td></tr>
+  <tr><td>Jelszó visszaállítása</td><td><code>sudo signage-reset-password FELHASZNÁLÓNÉV</code> (a <code>--admin</code> kapcsolóval adminisztrátor is lesz)</td></tr>
   <tr><td>Frissítés</td><td><code>git pull &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
   <tr><td>Adott verzió telepítése</td><td><code>git checkout v1.9.7 &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
   <tr><td>Adatok</td><td><code>/var/lib/narancs-signage</code> (<code>signage.db</code> + <code>media/</code>)</td></tr>
@@ -275,13 +298,13 @@ sudo systemctl start narancs-signage</code></pre>
   <dt>Az emojik körvonalasak</dt>
   <dd>A lejátszó minden emojit színes emoji betűtípussal rajzol. Futtasd újra a lejátszó telepítőt, hogy a betűtípus csomag felkerüljön.</dd>
   <dt>Elfelejtettem az admin jelszót</dt>
-  <dd>Egy másik admin létrehozhat neked új felhasználót. Ha te vagy az egyetlen admin, állíts vissza egy régebbi mentést, vagy kérj segítséget egy GitHub issue-ban.</dd>
+  <dd>A szerveren futtasd: <code>sudo signage-reset-password FELHASZNÁLÓNÉV</code>. Új jelszót ír ki, és mindenhol kijelentkezteti a felhasználót. Felhasználónév nélkül kilistázza a felhasználókat. Dockerben: <code>docker exec -it narancs-signage node src/reset-password.js FELHASZNÁLÓNÉV</code>.</dd>
 </dl>
 </section>
 
 <section id="api">
 <h2>API referencia</h2>
-<p>Az admin felület JSON REST API-t használ. A hitelesítés munkamenet sütivel történik (<code>POST /api/auth/login</code>); az adatot módosító kéréseknek az <code>X-Signage: 1</code> fejlécet is küldeniük kell (CSRF védelem). Hiba esetén a válasz <code>{ "error": "üzenet" }</code>, 4xx/5xx státusszal.</p>
+<p>Az admin felület JSON REST API-t használ. A hitelesítés munkamenet sütivel történik (<code>POST /api/auth/login</code>) — az adatot módosító kéréseknek az <code>X-Signage: 1</code> fejlécet is küldeniük kell (CSRF védelem) —, vagy <a href="#roles">API kulccsal</a>: <code>Authorization: Bearer ns_…</code>. Hiba esetén a válasz <code>{ "error": "üzenet" }</code>, 4xx/5xx státusszal.</p>
 <table>
   <tr><th>Végpont</th><th>Leírás</th></tr>
   <tr><td><code>POST /api/auth/login</code> · <code>/logout</code> · <code>GET /api/auth/state</code></td><td>Belépés, kilépés, aktuális felhasználó.</td></tr>
@@ -291,10 +314,14 @@ sudo systemctl start narancs-signage</code></pre>
   <tr><td><code>GET|POST /api/media</code> · <code>PUT|DELETE /api/media/:id</code></td><td>Médiatár; feltöltés a nyers fájllal mint kéréstörzs, <code>X-Filename</code> fejléccel.</td></tr>
   <tr><td><code>GET /api/screens</code> · <code>PUT|DELETE /api/screens/:id</code></td><td>Képernyők és párosításra váró eszközök.</td></tr>
   <tr><td><code>POST /api/screens/pair</code></td><td>Eszköz párosítása: <code>{ code, name, playlist_id }</code>.</td></tr>
-  <tr><td><code>POST /api/screens/:id/command</code> · <code>POST /api/screens/broadcast</code></td><td>Parancsok: <code>identify</code>, <code>prev</code>, <code>next</code>, <code>reload</code>, <code>clear-cache</code>, <code>diag</code>, <code>restart</code>, <code>reboot</code>.</td></tr>
+  <tr><td><code>POST /api/screens/:id/command</code> · <code>POST /api/screens/broadcast</code></td><td>Parancsok: <code>identify</code>, <code>prev</code>, <code>next</code>, <code>reload</code>, <code>clear-cache</code>, <code>diag</code>, <code>screenshot</code>, <code>restart</code>, <code>reboot</code>.</td></tr>
   <tr><td><code>GET|POST /api/alerts</code> · <code>DELETE /api/alerts/:id</code></td><td>Vészjelzések: <code>{ title, message, level, screen_ids, minutes }</code>.</td></tr>
   <tr><td><code>GET /api/forms/:id/submissions</code> · <code>GET /api/forms/:id/export.csv</code></td><td>Űrlap beküldések.</td></tr>
   <tr><td><code>GET|PUT /api/settings</code> · <code>GET /api/dashboard</code> · <code>GET /api/backup</code></td><td>Beállítások, irányítópult adatai, adatbázis letöltése.</td></tr>
+  <tr><td><code>GET /api/reports</code> · <code>GET /api/reports/export.csv</code></td><td>Lejátszási igazolás: <code>?from=ÉÉÉÉ-HH-NN&amp;to=ÉÉÉÉ-HH-NN&amp;screen_id=</code>.</td></tr>
+  <tr><td><code>GET /api/screens/:id/screenshot</code></td><td>A legutóbbi képernyőkép (JPEG); újat a <code>screenshot</code> paranccsal lehet kérni.</td></tr>
+  <tr><td><code>GET|POST /api/users</code> · <code>PUT|DELETE /api/users/:id</code></td><td>Felhasználók és szerepkörök (<code>admin</code>, <code>editor</code>, <code>viewer</code>).</td></tr>
+  <tr><td><code>GET|POST /api/tokens</code> · <code>DELETE /api/tokens/:id</code></td><td>API kulcsok: <code>{ name, role }</code>; a válasz egyszer tartalmazza a kulcsot.</td></tr>
 </table>
 <p>A lejátszó a nyilvános <code>/api/player/*</code> végpontokat használja (hello, config, stream, heartbeat, forms, weather, rss), az eszközazonosítójával.</p>
 </section>

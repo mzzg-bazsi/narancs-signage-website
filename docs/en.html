@@ -81,6 +81,11 @@ sudo ./install/install-server.sh</code></pre></li>
   proxy_set_header Host $host;
 }</code></pre>
 
+<h3 id="docker">Docker</h3>
+<p>A ready image for amd64 and arm64 (any Linux, NAS, Synology, Unraid). The data lives in the <code>/data</code> volume:</p>
+<pre><code>docker run -d --name narancs-signage -p 8080:8080 -v narancs-signage:/data -e TZ=Europe/Budapest --restart unless-stopped ghcr.io/mzzg-bazsi/narancs-signage:latest</code></pre>
+<p>Or use the <code>docker-compose.yml</code> from the repository: <code>docker compose up -d</code>. To update, pull the new image and recreate the container; the data stays in the volume.</p>
+
 <h3 id="dev">Running without the installer</h3>
 <p>Any machine with Node.js ≥ 22.13 (macOS, Windows, Linux) can run the server directly — there are no dependencies to install:</p>
 <pre><code>cd server
@@ -141,7 +146,8 @@ npm run dev</code></pre>
   <tr><td>Reload</td><td>Reloads the player page (picks up player updates).</td></tr>
   <tr><td>Clear cache</td><td>Deletes the offline cache and reloads.</td></tr>
   <tr><td>Restart player</td><td>Restarts the Chromium kiosk (installed player only).</td></tr>
-  <tr><td>Reboot device</td><td>Reboots the whole device (installed player only).</td></tr>
+  <tr><td>Reboot device</td><td>Reboots the whole device (installed player only, administrators).</td></tr>
+  <tr><td>Screenshot</td><td>Shows what is on the real display right now, taken by the device agent (installed player only).</td></tr>
 </table>
 <p><b>Edit</b> opens the screen settings in five tabs:</p>
 <table>
@@ -180,6 +186,7 @@ npm run dev</code></pre>
   <tr><td>🌐 Website</td><td>URL, zoom, interactive or display-only, timed reload. Some sites (Google, Facebook…) block embedding.</td></tr>
   <tr><td>📄 PDF</td><td>A PDF from the media library and the page to show.</td></tr>
   <tr><td>🧩 Custom HTML</td><td>Your own HTML/CSS/JS, running in an isolated frame.</td></tr>
+  <tr><td>🔲 Split screen</td><td>Several content items at once in zones. Layouts: sidebar right/left, bottom/top bar, L-shape, two or three columns, 2 × 2 grid; adjustable size of the secondary zone and an optional gap. Each zone rotates one or more existing content items by their own durations — e.g. a slideshow in the main area, clock &amp; weather in the sidebar, a news feed at the bottom.</td></tr>
 </table>
 <p>From a content item you can open its full-screen preview, duplicate it, or see which playlists use it before deleting.</p>
 
@@ -187,7 +194,7 @@ npm run dev</code></pre>
 <p>Upload images (JPG, PNG, WebP, GIF), videos (MP4, WebM) and PDFs by drag and drop. The maximum file size is 2 GB by default (<code>MAX_UPLOAD_MB</code>). Each file has a direct link; the players download and cache them for offline use.</p>
 
 <h3 id="calendars">Calendars</h3>
-<p>Create calendars with a colour (a theme colour or one of the predefined colours) and add events by hand, or import a Google / Outlook / any iCal (<code>.ics</code>) link. Imported calendars refresh every 15 minutes, or immediately with <b>Refresh</b>. All-day events are supported. Recurring events (RRULE) are not expanded — only the first occurrence is shown.</p>
+<p>Create calendars with a colour (a theme colour or one of the predefined colours) and add events by hand, or import a Google / Outlook / any iCal (<code>.ics</code>) link. Imported calendars refresh every 15 minutes, or immediately with <b>Refresh</b>. All-day events are supported. <b>Recurring events</b> work both ways: imported calendars expand their repeat rules (daily, weekly, monthly — e.g. “last Friday of the month” —, yearly, with skipped and moved occurrences), and your own events can repeat daily, weekly, monthly or yearly with an optional end date.</p>
 
 <h3 id="forms">Forms</h3>
 <p>Build touch-screen forms for surveys, sign-ups or guest registration. Start from a template (satisfaction survey, contact request, guest registration) or from scratch.</p>
@@ -206,10 +213,25 @@ npm run dev</code></pre>
 <h3 id="alerts">Emergency alerts</h3>
 <p>Show an instant full-screen message on all screens or selected ones. Set a title, message, level (info, warning, danger, success) and an expiry in minutes (or none). Templates: fire alarm, evacuation, short break, congratulations. Active alerts are listed with a button to end them; screens show the alert until it expires or is ended.</p>
 
-<h3 id="settings">Settings and users</h3>
+<h3 id="reports">Reports (proof of play)</h3>
+<p>Under <b>Reports</b> you see what played where and how many times: views and touches for a date range (7 days, 30 days, this month or any dates) and optionally one screen, a daily chart, and rankings by content and by screen. <b>Download CSV</b> exports every event (time, screen, content, type, view/touch) — for example for advertisers. The displays record every content view and every touch; data is kept for 90 days.</p>
+
+<h3 id="roles">Users, roles and API keys</h3>
+<table>
+  <tr><th>Role</th><th>Can do</th></tr>
+  <tr><td>Administrator</td><td>Everything, including users, API keys, language, branding, pairing and deleting screens, restarting devices and backups.</td></tr>
+  <tr><td>Editor</td><td>Content, playlists, media, calendars, forms, screen settings and commands (except restart/reboot), screenshots, emergency alerts, reports.</td></tr>
+  <tr><td>Viewer</td><td>Sees everything, changes nothing (only their own password).</td></tr>
+</table>
+<p><b>API keys</b> (Settings → API keys) let other systems — Home Assistant, Zapier, a script — call the API with their own role: send <code>Authorization: Bearer ns_…</code>. The key is shown only once when it is created; the server stores only its hash, and you can revoke it at any time. Example — send an emergency alert:</p>
+<pre><code>curl -X POST http://SERVER-IP:8080/api/alerts \
+  -H "Authorization: Bearer ns_…" -H "Content-Type: application/json" \
+  -d '{"title":"Fire alarm","message":"Leave the building","level":"danger","minutes":30}'</code></pre>
+
+<h3 id="settings">Settings</h3>
 <ul>
   <li><b>Language</b> of the admin panel, the screens and the server messages (English or Hungarian).</li>
-  <li><b>Password</b> change and <b>users</b>: every user is a full administrator.</li>
+  <li><b>Password</b> change, <b>users</b> with roles and <b>API keys</b> (administrators).</li>
   <li><b>Sample content</b>: recreate the default sample playlist.</li>
   <li><b>System and backup</b>: data folder, uptime, player address, database download, reload all screens.</li>
 </ul>
@@ -236,6 +258,7 @@ npm run dev</code></pre>
   <tr><td>Logs</td><td><code>journalctl -u narancs-signage -f</code></td></tr>
   <tr><td>Restart</td><td><code>sudo systemctl restart narancs-signage</code></td></tr>
   <tr><td>Manual backup</td><td><code>sudo signage-backup</code></td></tr>
+  <tr><td>Reset a password</td><td><code>sudo signage-reset-password USERNAME</code> (add <code>--admin</code> to make the user an administrator)</td></tr>
   <tr><td>Update</td><td><code>git pull &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
   <tr><td>Install a specific version</td><td><code>git checkout v1.9.7 &amp;&amp; sudo ./install/install-server.sh</code></td></tr>
   <tr><td>Data</td><td><code>/var/lib/narancs-signage</code> (<code>signage.db</code> + <code>media/</code>)</td></tr>
@@ -275,13 +298,13 @@ sudo systemctl start narancs-signage</code></pre>
   <dt>Emojis look like outlines</dt>
   <dd>The player puts every emoji in a colour emoji font. Re-run the player installer so the font package is installed.</dd>
   <dt>I forgot the admin password</dt>
-  <dd>Another admin can create a new user for you. If you are the only admin, restore an older backup or ask for help in a GitHub issue.</dd>
+  <dd>On the server run <code>sudo signage-reset-password USERNAME</code>. It prints a new password and signs the user out everywhere. Without a username it lists the users. With Docker: <code>docker exec -it narancs-signage node src/reset-password.js USERNAME</code>.</dd>
 </dl>
 </section>
 
 <section id="api">
 <h2>API reference</h2>
-<p>The admin panel uses a JSON REST API. Authentication is a session cookie (<code>POST /api/auth/login</code>); state-changing requests must also send the header <code>X-Signage: 1</code> (CSRF protection). Errors return <code>{ "error": "message" }</code> with a 4xx/5xx status.</p>
+<p>The admin panel uses a JSON REST API. Authentication is a session cookie (<code>POST /api/auth/login</code>) — state-changing requests must also send the header <code>X-Signage: 1</code> (CSRF protection) — or an <a href="#roles">API key</a> as <code>Authorization: Bearer ns_…</code>. Errors return <code>{ "error": "message" }</code> with a 4xx/5xx status.</p>
 <table>
   <tr><th>Endpoint</th><th>Description</th></tr>
   <tr><td><code>POST /api/auth/login</code> · <code>/logout</code> · <code>GET /api/auth/state</code></td><td>Sign in / out, current user.</td></tr>
@@ -291,10 +314,14 @@ sudo systemctl start narancs-signage</code></pre>
   <tr><td><code>GET|POST /api/media</code> · <code>PUT|DELETE /api/media/:id</code></td><td>Media library; upload with the raw file as body and the <code>X-Filename</code> header.</td></tr>
   <tr><td><code>GET /api/screens</code> · <code>PUT|DELETE /api/screens/:id</code></td><td>Screens and pending devices.</td></tr>
   <tr><td><code>POST /api/screens/pair</code></td><td>Pair a device: <code>{ code, name, playlist_id }</code>.</td></tr>
-  <tr><td><code>POST /api/screens/:id/command</code> · <code>POST /api/screens/broadcast</code></td><td>Commands: <code>identify</code>, <code>prev</code>, <code>next</code>, <code>reload</code>, <code>clear-cache</code>, <code>diag</code>, <code>restart</code>, <code>reboot</code>.</td></tr>
+  <tr><td><code>POST /api/screens/:id/command</code> · <code>POST /api/screens/broadcast</code></td><td>Commands: <code>identify</code>, <code>prev</code>, <code>next</code>, <code>reload</code>, <code>clear-cache</code>, <code>diag</code>, <code>screenshot</code>, <code>restart</code>, <code>reboot</code>.</td></tr>
   <tr><td><code>GET|POST /api/alerts</code> · <code>DELETE /api/alerts/:id</code></td><td>Emergency alerts: <code>{ title, message, level, screen_ids, minutes }</code>.</td></tr>
   <tr><td><code>GET /api/forms/:id/submissions</code> · <code>GET /api/forms/:id/export.csv</code></td><td>Form submissions.</td></tr>
   <tr><td><code>GET|PUT /api/settings</code> · <code>GET /api/dashboard</code> · <code>GET /api/backup</code></td><td>Settings, dashboard data, database download.</td></tr>
+  <tr><td><code>GET /api/reports</code> · <code>GET /api/reports/export.csv</code></td><td>Proof of play: <code>?from=YYYY-MM-DD&amp;to=YYYY-MM-DD&amp;screen_id=</code>.</td></tr>
+  <tr><td><code>GET /api/screens/:id/screenshot</code></td><td>The latest screenshot (JPEG); request a new one with the <code>screenshot</code> command.</td></tr>
+  <tr><td><code>GET|POST /api/users</code> · <code>PUT|DELETE /api/users/:id</code></td><td>Users and roles (<code>admin</code>, <code>editor</code>, <code>viewer</code>).</td></tr>
+  <tr><td><code>GET|POST /api/tokens</code> · <code>DELETE /api/tokens/:id</code></td><td>API keys: <code>{ name, role }</code>; the response contains the key once.</td></tr>
 </table>
 <p>The player uses the public <code>/api/player/*</code> endpoints (hello, config, stream, heartbeat, forms, weather, rss), identified by its device ID.</p>
 </section>

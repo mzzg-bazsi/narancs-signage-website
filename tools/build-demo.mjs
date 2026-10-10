@@ -17,7 +17,7 @@ const TICKER = {
 // 1. lejátszó + közös fájlok másolása (az abszolút /shared/ útvonalak relatívvá alakítva)
 const copy = (from, to) => { fs.mkdirSync(path.dirname(to), { recursive: true }); fs.copyFileSync(from, to); };
 for (const f of ['player.js', 'player.css']) copy(`${SRC}/server/public/player/${f}`, `${OUT}/player/${f}`);
-for (const f of ['i18n.js', 'themes.js', 'splash/logo.svg', 'splash/logo-color.svg']) copy(`${SRC}/server/public/shared/${f}`, `${OUT}/shared/${f}`);
+for (const f of ['i18n.js', 'themes.js', 'zones.js', 'splash/logo.svg', 'splash/logo-color.svg']) copy(`${SRC}/server/public/shared/${f}`, `${OUT}/shared/${f}`);
 let html = fs.readFileSync(`${SRC}/server/public/player/index.html`, 'utf8')
   .replaceAll('"/shared/', '"../shared/')
   .replace(/\s*<link rel="manifest"[^>]*>/, '')
@@ -44,6 +44,8 @@ fs.writeFileSync(`${OUT}/admin/index.html`, adminHtml);
 
 // 2. minta konfiguráció nyelvenként egy friss tesztszerverről
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// ha a port foglalt, egy másik (pl. teszt) szerverhez csatlakoznánk → inkább leállunk
+if (await fetch(`http://127.0.0.1:${PORT}/api/auth/state`).then(() => true, () => false)) throw new Error(`A ${PORT}-es port foglalt – állítsd le az ott futó szervert`);
 for (const lang of ['en', 'hu']) {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'signage-demo-'));
   const srv = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', 'src/server.js'], {
@@ -58,6 +60,17 @@ for (const lang of ['en', 'hu']) {
     });
     if (!setup.ok) throw new Error(`setup ${setup.status}: ${await setup.text()}`);
     const cookie = setup.headers.get('set-cookie').split(';')[0];
+    const call = async (method, p, body) => {
+      const r = await fetch(base + p, { method, headers: { 'Content-Type': 'application/json', Cookie: cookie, Origin: base, 'X-Signage': '1' }, body: body && JSON.stringify(body) });
+      if (!r.ok) throw new Error(`${method} ${p} ${r.status}: ${await r.text()}`);
+      return r.json();
+    };
+    // osztott képernyő minta: fő területen a hirdetmény és a kártyák, oldalsávon az óra – a lista második eleme
+    const zones = await call('POST', '/api/slides', { name: lang === 'hu' ? 'Osztott képernyő' : 'Split screen', type: 'zones', duration: 20,
+      data: { layout: 'right', size: 32, gap: true, zones: [{ items: [{ slide_id: 3 }, { slide_id: 1 }], transition: 'fade' }, { items: [{ slide_id: 2 }], transition: 'fade' }] } });
+    const pl = await call('GET', '/api/playlists/1');
+    pl.items.splice(1, 0, { slide_id: zones.id, duration: null, enabled: true, valid_from: null, valid_to: null });
+    await call('PUT', '/api/playlists/1', pl);
     const res = await fetch(`${base}/api/preview?playlist=1`, { headers: { Cookie: cookie } });
     if (!res.ok) throw new Error(`preview ${res.status}`);
     const cfg = await res.json();
@@ -67,11 +80,6 @@ for (const lang of ['en', 'hu']) {
     console.log(`✔ config-${lang}.json: ${Object.keys(cfg.slides).length} slides`);
 
     // admin bemutató: két párosított minta kijelző, statisztika és beküldött űrlapok, majd az admin adatai
-    const call = async (method, p, body) => {
-      const r = await fetch(base + p, { method, headers: { 'Content-Type': 'application/json', Cookie: cookie, Origin: base, 'X-Signage': '1' }, body: body && JSON.stringify(body) });
-      if (!r.ok) throw new Error(`${method} ${p} ${r.status}: ${await r.text()}`);
-      return r.json();
-    };
     const SCREENS = lang === 'hu' ? ['Előtér', 'Kávézó'] : ['Lobby', 'Café'];
     const slides = Object.values(cfg.slides);
     for (const [i, name] of SCREENS.entries()) {
@@ -89,7 +97,7 @@ for (const lang of ['en', 'hu']) {
     for (const [k, p] of Object.entries({
       state: '/api/auth/state', settings: '/api/settings', dashboard: '/api/dashboard', screens: '/api/screens',
       slides: '/api/slides', playlists: '/api/playlists', calendars: '/api/calendars', events: '/api/events',
-      forms: '/api/forms', media: '/api/media', alerts: '/api/alerts', users: '/api/users',
+      forms: '/api/forms', media: '/api/media', alerts: '/api/alerts', users: '/api/users', tokens: '/api/tokens', reports: '/api/reports',
     })) snap[k] = await call('GET', p);
     snap.submissions = { [form.id]: await call('GET', `/api/forms/${form.id}/submissions`) };
     delete snap.settings.data_dir;

@@ -21,7 +21,9 @@
   }
   // ?preview=demo:1 → a weboldal bemutatója; slide/playlist/screen/brand → az admin bemutató előnézete a DemoStore adataiból
   const preview = new URLSearchParams(location.search).get('preview') || '';
-  const config = preview.startsWith('demo') ? realFetch(`config-${lang}.json`).then((r) => r.json()).then(prepare) : window.DemoStore.load().then((d) => fromStore(d, preview));
+  // csak az első konfiguráció kéréskor töltjük be (a zónák beágyazott lejátszói nem kérnek konfigurációt)
+  let config = null;
+  const getConfig = () => (config ||= preview.startsWith('demo') ? realFetch(`config-${lang}.json`).then((r) => r.json()).then(prepare) : window.DemoStore.load().then((d) => fromStore(d, preview)));
 
   function fromStore(d, pv) {
     const [kind, idStr] = pv.split(':'), id = +idStr;
@@ -46,7 +48,7 @@
   window.fetch = (input, opts) => {
     const u = new URL(typeof input === 'string' ? input : input.url, location.href);
     if (!u.pathname.startsWith('/api/')) return realFetch(input, opts);
-    if (u.pathname === '/api/preview') return config.then(json);
+    if (u.pathname === '/api/preview') return getConfig().then(json);
     if (u.pathname === '/api/player/weather') {
       const q = u.searchParams;
       return realFetch(`https://api.open-meteo.com/v1/forecast?latitude=${+q.get('lat')}&longitude=${+q.get('lon')}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=5`);
