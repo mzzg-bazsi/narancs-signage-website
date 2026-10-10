@@ -9,12 +9,7 @@
   <li><b>Admin panel</b> — a web app at <code>/admin/</code> where you manage screens, playlists, content, branding and alerts.</li>
   <li><b>Player</b> — a web app at <code>/player/</code> that runs full screen on each display. The player installer turns any Ubuntu Server or Raspberry Pi into a locked-down kiosk that runs it.</li>
 </ul>
-<pre class="diagram">┌─────────────────────────┐   HTTP + SSE (real-time push)   ┌──────────────────────────┐
-│ Server (Ubuntu)         │ ◄─────────────────────────────► │ Display (ARM / x86)      │
-│ Node.js, SQLite         │                                 │ Chromium kiosk           │
-│ /admin   admin panel    │                                 │ /player  player          │
-│ /player  player app     │                                 │ offline cache            │
-└─────────────────────────┘                                 └──────────────────────────┘</pre>
+<img class="arch" src="../assets/architecture-en.svg" alt="Narancs Signage architecture: admin panel, server and displays" width="980" height="420">
 <h3>Requirements</h3>
 <table>
   <tr><th>Part</th><th>Requirement</th></tr>

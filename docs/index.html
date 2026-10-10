@@ -81,8 +81,8 @@
   if (matchMedia('(max-width: 900px)').matches) box.open = false;
   toc.addEventListener('click', () => { if (matchMedia('(max-width: 900px)').matches) box.open = false; });
 
-  // másolás gomb a kódblokkokhoz (a diagram kivételével)
-  for (const pre of body.querySelectorAll('pre:not(.diagram)')) {
+  // másolás gomb a kódblokkokhoz
+  for (const pre of body.querySelectorAll('pre')) {
     const b = document.createElement('button');
     b.className = 'copy'; b.textContent = t('Copy');
     b.addEventListener('click', async () => {

@@ -9,12 +9,7 @@
   <li><b>Admin felület</b>: webes alkalmazás a <code>/admin/</code> címen, itt kezeled a képernyőket, lejátszási listákat, tartalmakat, az arculatot és a vészjelzéseket.</li>
   <li><b>Lejátszó</b>: webes alkalmazás a <code>/player/</code> címen, teljes képernyőn fut minden kijelzőn. A lejátszó telepítője bármelyik Ubuntu Servert vagy Raspberry Pi-t lezárt kioszkká alakítja, ami ezt futtatja.</li>
 </ul>
-<pre class="diagram">┌─────────────────────────┐   HTTP + SSE (valós idejű)      ┌──────────────────────────┐
-│ Szerver (Ubuntu)        │ ◄─────────────────────────────► │ Kijelző (ARM / x86)      │
-│ Node.js, SQLite         │                                 │ Chromium kioszk          │
-│ /admin   admin felület  │                                 │ /player  lejátszó        │
-│ /player  lejátszó       │                                 │ offline gyorsítótár      │
-└─────────────────────────┘                                 └──────────────────────────┘</pre>
+<img class="arch" src="../assets/architecture-hu.svg" alt="A Narancs Signage felépítése: admin felület, szerver és kijelzők" width="980" height="420">
 <h3>Követelmények</h3>
 <table>
   <tr><th>Rész</th><th>Követelmény</th></tr>
