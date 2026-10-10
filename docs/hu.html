@@ -66,6 +66,7 @@ sudo ./install/install-server.sh</code></pre></li>
   <tr><td><code>HOST</code></td><td>0.0.0.0</td><td>Melyik címen figyeljen. Fordított proxy mögött: <code>127.0.0.1</code>.</td></tr>
   <tr><td><code>SIGNAGE_DATA</code></td><td><code>./data</code></td><td>Adatkönyvtár (adatbázis + média).</td></tr>
   <tr><td><code>MAX_UPLOAD_MB</code></td><td>2048</td><td>Egy feltöltött fájl legnagyobb mérete.</td></tr>
+  <tr><td><code>SIGNAGE_GALLERY</code></td><td>GitHub galéria</td><td>A közösségi sablongaléria címe (index.json).</td></tr>
 </table>
 
 <h3 id="https">HTTPS és fordított proxy</h3>
@@ -208,6 +209,18 @@ npm run dev</code></pre>
 <p><b>Saját sablonok:</b> bármely tartalom vagy lejátszási lista <b>Exportálás</b> gombja egy <code>.narancs.json</code> fájlt tölt le. Benne van a tartalom, minden, amire hivatkozik (menü- és kártyacélok, zónák), az űrlapok szerkezete és a képek (legfeljebb 40 MB). Az űrlap-beküldések, a saját naptáresemények és az iCal linkek nem kerülnek bele. A Sablonok oldal <b>Importálás fájlból</b> gombjával bármely Narancs Signage rendszerbe betölthető; a fájlt előbb ellenőrzi (ismert tartalomtípusok, érvényes hivatkozások, engedélyezett médiatípusok, méretkorlátok), és egy lépésben importálja — ha valami hibás, semmi nem jön létre.</p>
 <p>A formátum egyszerű JSON (<code>"format": "narancs-template", "version": 1</code>): a tartalmak nevekkel hivatkoznak egymásra (<code>s1</code>, <code>f1</code>, <code>c1</code>, <code>m1</code>), a szövegek lehetnek kétnyelvűek (<code>{"en": "…", "hu": "…"}</code>), a <code>{{org_name}}</code>, <code>{{city}}</code> és <code>{{date+N}}</code> helyőrzőket importáláskor tölti ki.</p>
 
+<h3 id="gallery">Közösségi galéria</h3>
+<p>A Sablonok oldal <b>Közösségi galéria</b> füle a <a href="https://github.com/mzzg-bazsi/narancs-signage-templates">narancs-signage-templates</a> repó sablonjait mutatja — a tíz beépített sablont és mindent, amit a felhasználók beküldenek — élő előnézettel, szerzővel, licenccel, <b>Telepítés</b> és <b>Letöltés</b> gombbal. A galériát a szerver tölti le (internet kell hozzá), és 10 percig tárolja. Saját galériához a <code>SIGNAGE_GALLERY</code> környezeti változót kell beállítani.</p>
+<p><b>Sablon nyelve:</b> a Sablonok oldal tetején lévő választó dönti el a kétnyelvű sablonoknál az előnézet és a telepített tartalom nyelvét, a galéria pedig az azon a nyelven elérhető sablonokat mutatja.</p>
+<p><b>Sablon beküldése:</b></p>
+<ol>
+  <li>Nyiss meg egy tartalmat vagy lejátszási listát → <b>Exportálás</b> → adj meg nevet, leírást és kategóriát → <b>Beküldés a galériába</b>. A fájl letöltődik, és megnyílik a galéria beküldő űrlapja a GitHubon (ingyenes GitHub fiók kell hozzá).</li>
+  <li>Húzd a letöltött <code>.narancs.json</code> fájlt a <i>Template file</i> mezőbe, válaszd ki a nyelveket és a licencet (CC0 vagy CC BY), és küldd el az űrlapot.</li>
+  <li>Egy robot ugyanazzal az ellenőrzéssel vizsgálja meg a sablont, amit a Narancs Signage is használ, és hozzászólásban válaszol: vagy megnyitja a pull requestet, vagy leírja, mit kell javítani (az issue szerkesztése után újra ellenőrzi).</li>
+  <li>Jóváhagyás után a sablon minden Narancs Signage admin felületén megjelenik.</li>
+</ol>
+
+
 <h3 id="media">Médiatár</h3>
 <p>Képek (JPG, PNG, WebP, GIF), videók (MP4, WebM) és PDF-ek feltöltése húzással. Egy fájl legfeljebb 2 GB lehet (<code>MAX_UPLOAD_MB</code>). Minden fájlnak van közvetlen linkje; a lejátszók letöltik és eltárolják őket az offline működéshez.</p>
 
@@ -342,6 +355,7 @@ sudo systemctl start narancs-signage</code></pre>
   <tr><td><code>GET|POST /api/tokens</code> · <code>DELETE /api/tokens/:id</code></td><td>API kulcsok: <code>{ name, role }</code>; a válasz egyszer tartalmazza a kulcsot.</td></tr>
   <tr><td><code>GET /api/templates</code> · <code>POST /api/templates/:id/install</code></td><td>Beépített sablonok és telepítésük. Előnézet: <code>/player/?preview=template:ID</code>.</td></tr>
   <tr><td><code>POST /api/templates/export</code> · <code>POST /api/templates/import</code></td><td>Export <code>{ slide_ids, playlist_id, name, description, category }</code> → sablon JSON; sablon JSON importálása.</td></tr>
+  <tr><td><code>GET /api/gallery</code> · <code>POST /api/gallery/:id/install</code> · <code>GET /api/gallery/:id/download</code></td><td>Közösségi galéria: lista (<code>?lang=</code>), telepítés (<code>{ lang }</code>), letöltés. Előnézet: <code>/player/?preview=gallery:ID&amp;lang=hu</code>.</td></tr>
 </table>
 <p>A lejátszó a nyilvános <code>/api/player/*</code> végpontokat használja (hello, config, stream, heartbeat, forms, weather, rss), az eszközazonosítójával.</p>
 </section>

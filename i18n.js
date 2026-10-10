@@ -2,6 +2,8 @@
    Elsőbbség: ?lang= → elmentett választás → böngésző nyelve. */
 (() => {
   const HU = {
+    "Community gallery": "Közösségi galéria",
+    "Submit your template": "Küldd be a sablonod",
     "10 ready-made templates": "10 kész sablon",
     "Install a complete content pack in one click – in your own colours – or export your own as a": "Telepíts egy teljes tartalomcsomagot egy kattintással – a saját színeiddel –, vagy exportáld a sajátodat",
     "file and import it anywhere.": "fájlba, és importáld bárhová.",

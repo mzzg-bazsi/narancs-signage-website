@@ -66,6 +66,7 @@ sudo ./install/install-server.sh</code></pre></li>
   <tr><td><code>HOST</code></td><td>0.0.0.0</td><td>Address to listen on. Use <code>127.0.0.1</code> behind a reverse proxy.</td></tr>
   <tr><td><code>SIGNAGE_DATA</code></td><td><code>./data</code></td><td>Data folder (database + media).</td></tr>
   <tr><td><code>MAX_UPLOAD_MB</code></td><td>2048</td><td>Maximum size of a single uploaded file.</td></tr>
+  <tr><td><code>SIGNAGE_GALLERY</code></td><td>GitHub gallery</td><td>URL of the community template gallery (index.json).</td></tr>
 </table>
 
 <h3 id="https">HTTPS and reverse proxy</h3>
@@ -208,6 +209,18 @@ npm run dev</code></pre>
 <p><b>Your own templates:</b> the <b>Export</b> button of any content item or playlist downloads a <code>.narancs.json</code> file. It contains the content, everything it links to (menu and card targets, zones), the structure of forms and the images (up to 40 MB). Form submissions, your own calendar events and iCal links are left out. <b>Import from file</b> on the Templates page loads it into any Narancs Signage system; the file is checked first (known content types, valid links, allowed media types, size limits) and imported in one step — if anything is wrong, nothing is created.</p>
 <p>The format is plain JSON (<code>"format": "narancs-template", "version": 1</code>): content refers to each other by names (<code>s1</code>, <code>f1</code>, <code>c1</code>, <code>m1</code>), texts can be bilingual (<code>{"en": "…", "hu": "…"}</code>), and <code>{{org_name}}</code>, <code>{{city}}</code> and <code>{{date+N}}</code> are filled in when importing.</p>
 
+<h3 id="gallery">Community gallery</h3>
+<p>The <b>Community gallery</b> tab on the Templates page lists the templates of the <a href="https://github.com/mzzg-bazsi/narancs-signage-templates">narancs-signage-templates</a> repository — the ten built-in templates plus everything users submit — with live preview, author, license, <b>Install</b> and <b>Download</b>. The server downloads the gallery (it needs internet access) and caches it for 10 minutes. Set <code>SIGNAGE_GALLERY</code> to use your own gallery.</p>
+<p><b>Template language:</b> the selector at the top of the Templates page decides the language of the previews and of the installed content for bilingual templates, and the gallery shows the templates available in that language.</p>
+<p><b>Submitting a template:</b></p>
+<ol>
+  <li>Open a content item or playlist → <b>Export</b> → give it a name, description and category → <b>Submit to the gallery</b>. The file is downloaded and the gallery's submission form opens on GitHub (a free GitHub account is needed).</li>
+  <li>Drag the downloaded <code>.narancs.json</code> file into the <i>Template file</i> box, choose the languages and the license (CC0 or CC BY), and send the form.</li>
+  <li>A bot checks the template with the same validation Narancs Signage uses and replies in a comment: either a pull request is opened, or it explains what to fix (edit the issue and it is checked again).</li>
+  <li>After review the template appears in every Narancs Signage admin panel.</li>
+</ol>
+
+
 <h3 id="media">Media library</h3>
 <p>Upload images (JPG, PNG, WebP, GIF), videos (MP4, WebM) and PDFs by drag and drop. The maximum file size is 2 GB by default (<code>MAX_UPLOAD_MB</code>). Each file has a direct link; the players download and cache them for offline use.</p>
 
@@ -342,6 +355,7 @@ sudo systemctl start narancs-signage</code></pre>
   <tr><td><code>GET|POST /api/tokens</code> · <code>DELETE /api/tokens/:id</code></td><td>API keys: <code>{ name, role }</code>; the response contains the key once.</td></tr>
   <tr><td><code>GET /api/templates</code> · <code>POST /api/templates/:id/install</code></td><td>Built-in templates and installing one. Preview: <code>/player/?preview=template:ID</code>.</td></tr>
   <tr><td><code>POST /api/templates/export</code> · <code>POST /api/templates/import</code></td><td>Export <code>{ slide_ids, playlist_id, name, description, category }</code> → template JSON; import a template JSON.</td></tr>
+  <tr><td><code>GET /api/gallery</code> · <code>POST /api/gallery/:id/install</code> · <code>GET /api/gallery/:id/download</code></td><td>Community gallery: list (<code>?lang=</code>), install (<code>{ lang }</code>), download. Preview: <code>/player/?preview=gallery:ID&amp;lang=hu</code>.</td></tr>
 </table>
 <p>The player uses the public <code>/api/player/*</code> endpoints (hello, config, stream, heartbeat, forms, weather, rss), identified by its device ID.</p>
 </section>

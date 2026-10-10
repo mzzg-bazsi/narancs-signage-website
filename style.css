@@ -314,3 +314,4 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
 .tpl-strip ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .tpl-strip li { background: var(--soft); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 500; }
 @media (max-width: 800px) { .tpl-strip { grid-template-columns: 1fr; } }
+.tpl-strip .tpl-links { margin-top: 10px; font-weight: 600; }
