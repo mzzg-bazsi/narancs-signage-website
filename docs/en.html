@@ -186,7 +186,7 @@ npm run dev</code></pre>
 <p><b>Edit</b> opens the screen settings in five tabs:</p>
 <table>
   <tr><th>Tab</th><th>Settings</th></tr>
-  <tr><td>General</td><td>Name, default playlist, return to autoplay after touch (seconds of inactivity), virtual keyboard for forms, <b>tablet mode</b> (on: never show a mouse pointer, touch only; off: the pointer appears while the mouse moves and hides after 3 seconds).</td></tr>
+  <tr><td>General</td><td>Name, default playlist, return to autoplay after touch (seconds of inactivity), virtual keyboard for forms, <b>page with a tap</b> (on by default), <b>tablet mode</b> (on: never show a mouse pointer, touch only; off: the pointer appears while the mouse moves and hides after 3 seconds).</td></tr>
   <tr><td>Schedule</td><td>Rules that play a different playlist on given days, between given times and optionally between dates — e.g. breakfast menu 7–10 am, different content at weekends. Rules are evaluated in order; the first matching rule wins, otherwise the default playlist plays.</td></tr>
   <tr><td>Look</td><td>Orientation (landscape, portrait 90°/270°, upside down — rotated in software), corner clock, progress bar, news ticker (one message per line) with speed and colour, a different theme and dark / light mode for this screen, accent colour override.</td></tr>
   <tr><td>Power</td><td>Scheduled screen off: on/off time and operating days. Outside these hours the screen is black; on an installed player the monitor itself is switched off.</td></tr>
@@ -322,6 +322,7 @@ npm run dev</code></pre>
   <li><b>Offline</b>: the configuration and all media are cached. If the server or the network goes down, the screen keeps playing and shows a small “Offline – cached content” label.</li>
   <li><b>Real-time updates</b>: saved changes, alerts and commands arrive within seconds over Server-Sent Events.</li>
   <li><b>Touch</b>: interactive content (menus, cards, forms) reacts to touch; after the inactivity time set for the screen, playback continues.</li>
+  <li><b>Paging by touch</b>: tap the left edge of the screen for the previous item and the right edge for the next one (rotated screens follow the content's left and right). On menus, forms and interactive web pages arrow buttons appear in the bottom corners instead, so a tap meant for a button never turns the page. Autoplay continues after the usual inactivity time.</li>
   <li><b>Mouse</b>: in non-tablet mode the pointer is visible while the mouse moves and hides after 3 seconds.</li>
   <li><b>Keyboard</b>: <kbd>→</kbd> next, <kbd>←</kbd> previous, <kbd>I</kbd> identify.</li>
   <li><b>Statistics</b>: views and touches are reported to the dashboard.</li>

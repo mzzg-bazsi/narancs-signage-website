@@ -186,7 +186,7 @@ npm run dev</code></pre>
 <p>A <b>Szerkesztés</b> öt fülön nyitja meg a képernyő beállításait:</p>
 <table>
   <tr><th>Fül</th><th>Beállítások</th></tr>
-  <tr><td>Általános</td><td>Név, alapértelmezett lejátszási lista, visszatérés érintés után (tétlenségi idő másodpercben), virtuális billentyűzet űrlapokhoz, <b>tablet mód</b> (bekapcsolva soha nincs egérmutató, csak érinteni lehet; kikapcsolva egér mozgatásakor látszik a mutató, és 3 másodperc után eltűnik).</td></tr>
+  <tr><td>Általános</td><td>Név, alapértelmezett lejátszási lista, visszatérés érintés után (tétlenségi idő másodpercben), virtuális billentyűzet űrlapokhoz, <b>lapozás érintéssel</b> (alapból be), <b>tablet mód</b> (bekapcsolva soha nincs egérmutató, csak érinteni lehet; kikapcsolva egér mozgatásakor látszik a mutató, és 3 másodperc után eltűnik).</td></tr>
   <tr><td>Ütemezés</td><td>Szabályok, amik adott napokon, időszakban, és ha kell, dátumok között más listát játszanak. Például reggel 7–10 között reggeli menü, hétvégén más tartalom. A szabályok sorrendben értékelődnek ki: az első érvényes szabály listája fut, ha egyik sem, akkor az alapértelmezett.</td></tr>
   <tr><td>Megjelenés</td><td>Tájolás (fekvő, álló 90°/270°, fejjel lefelé; szoftveres forgatás), óra a sarokban, folyamatjelző csík, hírszalag (soronként egy üzenet) sebességgel és színnel, eltérő téma és sötét / világos mód erre a képernyőre, kiemelő szín felülírása.</td></tr>
   <tr><td>Be/kikapcsolás</td><td>Időzített képernyő kikapcsolás: be- és kikapcsolási idő, üzemnapok. Üzemidőn kívül fekete kép; telepített lejátszón magát a monitort is kikapcsolja.</td></tr>
@@ -322,6 +322,7 @@ npm run dev</code></pre>
   <li><b>Offline</b>: a beállítások és az összes médiafájl el van tárolva. Ha a szerver vagy a hálózat leáll, a képernyő tovább játszik, és egy kis „Offline – tárolt tartalom” felirat jelzi.</li>
   <li><b>Valós idejű frissítés</b>: a mentett változások, vészjelzések és parancsok másodpercek alatt megérkeznek (Server-Sent Events).</li>
   <li><b>Érintés</b>: az interaktív tartalmak (menük, kártyák, űrlapok) reagálnak az érintésre; a képernyőre beállított tétlenségi idő után folytatódik a lejátszás.</li>
+  <li><b>Lapozás érintéssel</b>: a képernyő bal szélét megérintve az előző, a jobb szélét megérintve a következő tartalom jön (elforgatott kijelzőn a tartalom szerinti bal és jobb). Menün, űrlapon és interaktív weboldalon a szélek helyett nyilak jelennek meg az alsó sarkokban, így a gombok érintése sosem lapoz. Az automatikus lejátszás a szokásos tétlenségi idő után folytatódik.</li>
   <li><b>Egér</b>: nem tablet módban a mutató látszik, amíg mozog az egér, és 3 másodperc után eltűnik.</li>
   <li><b>Billentyűzet</b>: <kbd>→</kbd> következő, <kbd>←</kbd> előző, <kbd>I</kbd> azonosítás.</li>
   <li><b>Statisztika</b>: a megjelenések és érintések az irányítópultra kerülnek.</li>
