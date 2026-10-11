@@ -117,12 +117,13 @@
     lbIdx = (i + lbItems.length) % lbItems.length;
     const a = lbItems[lbIdx];
     $('#lbImg').src = a.href; $('#lbImg').alt = a.querySelector('img').alt;
-    $('#lbCap').textContent = a.nextElementSibling.textContent;
+    $('#lbCap').textContent = a.dataset.cap ? t(a.dataset.cap) : a.nextElementSibling.textContent;
     $('#lbNum').textContent = `${lbIdx + 1} / ${lbItems.length}`;
   }
-  $$('.gallery a').forEach((a) => a.addEventListener('click', (e) => {
+  // a „Képek” fülek galériái és a funkciók képei (a.lb) külön csoportként léptethetők
+  $$('.gallery a, a.lb').forEach((a) => a.addEventListener('click', (e) => {
     e.preventDefault();
-    lbItems = $$('a', a.closest('.gallery'));
+    lbItems = a.classList.contains('lb') ? $$('a.lb') : $$('a', a.closest('.gallery'));
     lbShow(lbItems.indexOf(a));
     lb.showModal();
   }));

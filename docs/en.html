@@ -136,9 +136,11 @@ npm run dev</code></pre>
 
 <h3 id="dashboard">Dashboard</h3>
 <p>Online screens, number of content items and playlists, touches and form submissions in the last 7 days, an activity chart, the most viewed content, recent submissions, active alerts and storage usage. Buttons to reload or identify all screens.</p>
+<figure class="shot"><a href="../assets/shots/admin-dashboard.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-dashboard.png" alt="Dashboard" width="1600" height="900"></a><figcaption>Dashboard</figcaption></figure>
 
 <h3 id="screens">Screens</h3>
 <p>Each paired screen is a card showing its status (online/offline), input mode (touch or mouse), what is playing right now, its playlist, resolution and last check-in. Turn on <b>Live preview</b> to see every screen's output live.</p>
+<figure class="shot"><a href="../assets/shots/admin-screens.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-screens.png" alt="Screens with live preview" width="1600" height="900"></a><figcaption>Screens with live preview</figcaption></figure>
 <p><b>Control</b> sends commands to the screen:</p>
 <table>
   <tr><th>Command</th><th>Effect</th></tr>
@@ -162,6 +164,7 @@ npm run dev</code></pre>
 
 <h3 id="playlists">Playlists</h3>
 <p>A playlist is an ordered list of content items. Drag rows to reorder them. For each item you can set:</p>
+<figure class="shot"><a href="../assets/shots/admin-playlist.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-playlist.png" alt="Playlist editor with live preview" width="1600" height="900"></a><figcaption>Playlist editor with live preview</figcaption></figure>
 <ul>
   <li><b>duration</b> in seconds (empty = the content's own duration),</li>
   <li>an <b>on/off switch</b> to skip it temporarily,</li>
@@ -189,10 +192,12 @@ npm run dev</code></pre>
   <tr><td>🧩 Custom HTML</td><td>Your own HTML/CSS/JS, running in an isolated frame.</td></tr>
   <tr><td>🔲 Split screen</td><td>Several content items at once in zones. Layouts: sidebar right/left, bottom/top bar, L-shape, two or three columns, 2 × 2 grid; adjustable size of the secondary zone and an optional gap. Each zone rotates one or more existing content items by their own durations — e.g. a slideshow in the main area, clock &amp; weather in the sidebar, a news feed at the bottom.</td></tr>
 </table>
+<div class="shot-pair"><figure class="shot"><a href="../assets/shots/admin-content-editor.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-content-editor.png" alt="Content editor (interactive menu)" width="1600" height="900"></a><figcaption>Content editor (interactive menu)</figcaption></figure><figure class="shot"><a href="../assets/shots/admin-zones.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-zones.png" alt="Split screen: layouts and zones" width="1600" height="900"></a><figcaption>Split screen: layouts and zones</figcaption></figure></div>
 <p>From a content item you can open its full-screen preview, duplicate it, or see which playlists use it before deleting.</p>
 
 <h3 id="templates">Templates</h3>
 <p>Under <b>Templates</b> you find ready-made content packs, each with a live preview. <b>Install</b> creates a new playlist with all the content, forms and calendars of the template — in your own branding colours and with your organisation's name. Your existing content is not changed, and you can edit everything afterwards.</p>
+<figure class="shot"><a href="../assets/shots/admin-templates.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-templates.png" alt="Templates: built-in packs and the community gallery" width="1600" height="900"></a><figcaption>Templates: built-in packs and the community gallery</figcaption></figure>
 <table>
   <tr><th>Template</th><th>Contents</th></tr>
   <tr><td>🍽️ Restaurant &amp; café</td><td>Welcome, today's menu next to the clock (split screen), daily special, opening hours, Wi-Fi, feedback form</td></tr>
@@ -240,12 +245,15 @@ npm run dev</code></pre>
   <li><b>Colour the content</b> — new content uses the theme colours by default; <b>Apply branding to all content</b> converts older content with custom colours. Images and videos are not changed.</li>
 </ol>
 <p>Changes show immediately in the preview and reach the screens after saving. A screen can use a different theme (<b>Screens → Edit → Look</b>); the logo and header stay global.</p>
+<figure class="shot"><a href="../assets/shots/admin-branding.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-branding.png" alt="Branding: 10 themes with live preview" width="1600" height="900"></a><figcaption>Branding: 10 themes with live preview</figcaption></figure>
 
 <h3 id="alerts">Emergency alerts</h3>
 <p>Show an instant full-screen message on all screens or selected ones. Set a title, message, level (info, warning, danger, success) and an expiry in minutes (or none). Templates: fire alarm, evacuation, short break, congratulations. Active alerts are listed with a button to end them; screens show the alert until it expires or is ended.</p>
+<figure class="shot"><a href="../assets/shots/admin-alerts.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-alerts.png" alt="Emergency alert with templates" width="1600" height="900"></a><figcaption>Emergency alert with templates</figcaption></figure>
 
 <h3 id="reports">Reports (proof of play)</h3>
 <p>Under <b>Reports</b> you see what played where and how many times: views and touches for a date range (7 days, 30 days, this month or any dates) and optionally one screen, a daily chart, and rankings by content and by screen. <b>Download CSV</b> exports every event (time, screen, content, type, view/touch) — for example for advertisers. The displays record every content view and every touch; data is kept for 90 days.</p>
+<figure class="shot"><a href="../assets/shots/admin-reports.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-reports.png" alt="Reports: views and touches by content and screen" width="1600" height="900"></a><figcaption>Reports: views and touches by content and screen</figcaption></figure>
 
 <h3 id="roles">Users, roles and API keys</h3>
 <table>
@@ -255,6 +263,7 @@ npm run dev</code></pre>
   <tr><td>Viewer</td><td>Sees everything, changes nothing (only their own password).</td></tr>
 </table>
 <p><b>API keys</b> (Settings → API keys) let other systems — Home Assistant, Zapier, a script — call the API with their own role: send <code>Authorization: Bearer ns_…</code>. The key is shown only once when it is created; the server stores only its hash, and you can revoke it at any time. Example — send an emergency alert:</p>
+<figure class="shot"><a href="../assets/shots/admin-settings.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-settings.png" alt="Users, roles and API keys in Settings" width="1600" height="900"></a><figcaption>Users, roles and API keys in Settings</figcaption></figure>
 <pre><code>curl -X POST http://SERVER-IP:8080/api/alerts \
   -H "Authorization: Bearer ns_…" -H "Content-Type: application/json" \
   -d '{"title":"Fire alarm","message":"Leave the building","level":"danger","minutes":30}'</code></pre>
@@ -270,6 +279,7 @@ npm run dev</code></pre>
 
 <section id="display">
 <h2>On the display</h2>
+<div class="shot-pair"><figure class="shot"><a href="../assets/shots/player-zones.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/player-zones.png" alt="Split screen: meetings next to the clock" width="1600" height="900"></a><figcaption>Split screen: meetings next to the clock</figcaption></figure><figure class="shot"><a href="../assets/shots/player-menu.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/player-menu.png" alt="Interactive touch menu" width="1600" height="900"></a><figcaption>Interactive touch menu</figcaption></figure></div>
 <ul>
   <li><b>Startup</b>: boot screen with progress bar → loading screen → content. If the server cannot be reached, a status screen explains why and keeps retrying.</li>
   <li><b>Offline</b>: the configuration and all media are cached. If the server or the network goes down, the screen keeps playing and shows a small “Offline – cached content” label.</li>
