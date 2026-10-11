@@ -188,7 +188,7 @@ npm run dev</code></pre>
   <tr><th>Fül</th><th>Beállítások</th></tr>
   <tr><td>Általános</td><td>Név, alapértelmezett lejátszási lista, visszatérés érintés után (tétlenségi idő másodpercben), virtuális billentyűzet űrlapokhoz, <b>tablet mód</b> (bekapcsolva soha nincs egérmutató, csak érinteni lehet; kikapcsolva egér mozgatásakor látszik a mutató, és 3 másodperc után eltűnik).</td></tr>
   <tr><td>Ütemezés</td><td>Szabályok, amik adott napokon, időszakban, és ha kell, dátumok között más listát játszanak. Például reggel 7–10 között reggeli menü, hétvégén más tartalom. A szabályok sorrendben értékelődnek ki: az első érvényes szabály listája fut, ha egyik sem, akkor az alapértelmezett.</td></tr>
-  <tr><td>Megjelenés</td><td>Tájolás (fekvő, álló 90°/270°, fejjel lefelé; szoftveres forgatás), óra a sarokban, folyamatjelző csík, hírszalag (soronként egy üzenet) sebességgel és színnel, eltérő téma erre a képernyőre, kiemelő szín felülírása.</td></tr>
+  <tr><td>Megjelenés</td><td>Tájolás (fekvő, álló 90°/270°, fejjel lefelé; szoftveres forgatás), óra a sarokban, folyamatjelző csík, hírszalag (soronként egy üzenet) sebességgel és színnel, eltérő téma és sötét / világos mód erre a képernyőre, kiemelő szín felülírása.</td></tr>
   <tr><td>Be/kikapcsolás</td><td>Időzített képernyő kikapcsolás: be- és kikapcsolási idő, üzemnapok. Üzemidőn kívül fekete kép; telepített lejátszón magát a monitort is kikapcsolja.</td></tr>
   <tr><td>Eszköz</td><td>Eszközazonosító, felbontás, platform, böngésző, nyelv, futásidő, offline gyorsítótár és távvezérlő ügynök állapota, párosítás ideje; gyorsítótár ürítése, újraindítás, törlés.</td></tr>
 </table>
@@ -270,12 +270,13 @@ npm run dev</code></pre>
 
 <h3 id="branding">Arculat</h3>
 <ol>
-  <li><b>Téma</b>: 10 beépített téma (Narancs, Óceán, Erdő, Éjféli lila, Bordó, Fekete-arany, Neon, Tiszta világos, Vállalati kék, Pasztell). Mindegyik beállítja a színeket, betűtípusokat és a lekerekítést; utána bármelyik szín, a szöveg és a címek betűtípusa és a lekerekítés felülírható.</li>
+  <li><b>Téma</b>: 10 beépített téma (Narancs, Óceán, Erdő, Éjféli lila, Bordó, Fekete-arany, Neon, Tiszta világos, Vállalati kék, Pasztell). Mindegyik beállítja a színeket, betűtípusokat és a lekerekítést, és minden témának van <b>sötét és világos módja</b> (a témák feletti Mód kapcsoló). Utána bármelyik szín, a szöveg és a címek betűtípusa és a lekerekítés felülírható.</li>
+  <li><b>Saját témák</b>: a <b>Mentés saját témaként</b> a jelenlegi színeket, betűket és formát saját témaként (mindkét móddal) elteszi. A saját témák <b>fájlba exportálhatók</b>, így megoszthatod őket, az <b>Importálás</b> pedig betölti a más által készített téma fájlt. Az importált fájlt a rendszer ellenőrzi: csak színértékek és ismert betűtípusnevek mehetnek át.</li>
   <li><b>Szervezet, logó és címek</b>: a szervezet neve, szlogen, logó (átlátszó hátterű PNG vagy SVG ajánlott), logó vízjel valamelyik sarokban, méretével és átlátszatlanságával.</li>
   <li><b>Fejléc sáv</b>: logó, cím, alcím és óra minden képernyő tetején, minden tartalom fölött.</li>
   <li><b>Tartalmak színezése</b>: az új tartalmak alapból a téma színeit használják; az <b>Összes tartalom arculat szerint</b> gomb a régebbi, egyedi színű tartalmakat is átszínezi. A képek és videók nem változnak.</li>
 </ol>
-<p>A változások azonnal látszanak az előnézetben, és mentés után kerülnek ki a képernyőkre. Egy képernyő eltérő témát is használhat (<b>Képernyők → Szerkesztés → Megjelenés</b>); a logó és a fejléc globális marad.</p>
+<p>A változások azonnal látszanak az előnézetben, és mentés után kerülnek ki a képernyőkre. Egy képernyő eltérő témát vagy módot is használhat (<b>Képernyők → Szerkesztés → Megjelenés</b>); a logó és a fejléc globális marad.</p>
 <p>A beállítások fülekre vannak bontva – <b>Téma</b>, <b>Logó és név</b>, <b>Fejléc</b>, <b>Finomhangolás</b> és <b>Átszínezés</b> –, mellettük végig látszik az élő előnézet.</p>
 <figure class="shot"><a href="../assets/shots/hu/admin-branding.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/hu/admin-branding.png" alt="Arculat: 10 téma élő előnézettel" width="1600" height="900"></a><figcaption>Arculat: 10 téma élő előnézettel</figcaption></figure>
 

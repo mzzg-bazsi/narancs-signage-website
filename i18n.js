@@ -238,7 +238,7 @@
     "Remote control": "Távvezérlés",
     "Live screenshot of the real display, identify, previous/next, reload, restart the player or reboot the device — from the admin.": "Élő képernyőkép a valódi kijelzőről, azonosítás, előző/következő, újratöltés, a lejátszó vagy az eszköz újraindítása — az adminból.",
     "Branding": "Arculat",
-    "10 built-in themes, custom colours, fonts, logo watermark and header bar. A different theme per screen.": "10 beépített téma, egyedi színek, betűtípusok, logó vízjel és fejléc. Képernyőnként más téma is lehet.",
+    "10 built-in themes in dark and light mode, custom colours and fonts, shareable theme files, logo watermark and header bar. A different theme per screen.": "10 beépített téma sötét és világos módban, egyedi színek és betűtípusok, megosztható téma fájlok, logó vízjel és fejléc. Képernyőnként más téma is lehet.",
     "Emergency alerts": "Vészriasztás",
     "An instant full-screen message on all or selected screens, with templates and expiry.": "Azonnali teljes képernyős üzenet minden vagy kiválasztott kijelzőn, sablonokkal és lejárattal.",
     "Works offline": "Offline is működik",

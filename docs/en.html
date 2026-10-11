@@ -188,7 +188,7 @@ npm run dev</code></pre>
   <tr><th>Tab</th><th>Settings</th></tr>
   <tr><td>General</td><td>Name, default playlist, return to autoplay after touch (seconds of inactivity), virtual keyboard for forms, <b>tablet mode</b> (on: never show a mouse pointer, touch only; off: the pointer appears while the mouse moves and hides after 3 seconds).</td></tr>
   <tr><td>Schedule</td><td>Rules that play a different playlist on given days, between given times and optionally between dates — e.g. breakfast menu 7–10 am, different content at weekends. Rules are evaluated in order; the first matching rule wins, otherwise the default playlist plays.</td></tr>
-  <tr><td>Look</td><td>Orientation (landscape, portrait 90°/270°, upside down — rotated in software), corner clock, progress bar, news ticker (one message per line) with speed and colour, a different theme for this screen, accent colour override.</td></tr>
+  <tr><td>Look</td><td>Orientation (landscape, portrait 90°/270°, upside down — rotated in software), corner clock, progress bar, news ticker (one message per line) with speed and colour, a different theme and dark / light mode for this screen, accent colour override.</td></tr>
   <tr><td>Power</td><td>Scheduled screen off: on/off time and operating days. Outside these hours the screen is black; on an installed player the monitor itself is switched off.</td></tr>
   <tr><td>Device</td><td>Device ID, resolution, platform, browser, language, uptime, offline cache and remote agent status, pairing date; clear cache, restart, delete.</td></tr>
 </table>
@@ -270,12 +270,13 @@ npm run dev</code></pre>
 
 <h3 id="branding">Branding</h3>
 <ol>
-  <li><b>Theme</b> — 10 built-in themes (Orange, Ocean, Forest, Midnight purple, Burgundy, Black &amp; gold, Neon, Clean light, Corporate blue, Pastel). Each sets colours, fonts and corner rounding; you can then override any colour, the text and heading fonts and the rounding.</li>
+  <li><b>Theme</b> — 10 built-in themes (Orange, Ocean, Forest, Midnight purple, Burgundy, Black &amp; gold, Neon, Clean light, Corporate blue, Pastel). Each sets colours, fonts and corner rounding, and every theme has a <b>dark and a light mode</b> (the Mode switch above the themes). You can then override any colour, the text and heading fonts and the rounding.</li>
+  <li><b>My themes</b> — <b>Save as my theme</b> keeps the current colours, fonts and shape as your own theme (with both modes). Each own theme can be <b>exported to a file</b> to share it, and <b>Import</b> loads a theme file someone else made. Imported files are checked: only colour values and known font names are accepted.</li>
   <li><b>Organisation, logo and titles</b> — organisation name, slogan, logo (transparent PNG or SVG recommended), logo watermark in a corner with size and opacity.</li>
   <li><b>Header bar</b> — logo, title, subtitle and clock at the top of every screen, above all content.</li>
   <li><b>Colour the content</b> — new content uses the theme colours by default; <b>Apply branding to all content</b> converts older content with custom colours. Images and videos are not changed.</li>
 </ol>
-<p>Changes show immediately in the preview and reach the screens after saving. A screen can use a different theme (<b>Screens → Edit → Look</b>); the logo and header stay global.</p>
+<p>Changes show immediately in the preview and reach the screens after saving. A screen can use a different theme or mode (<b>Screens → Edit → Look</b>); the logo and header stay global.</p>
 <p>The settings are grouped into tabs – <b>Theme</b>, <b>Logo &amp; name</b>, <b>Header</b>, <b>Fine-tuning</b> and <b>Recolour</b> – while the live preview stays visible next to them.</p>
 <figure class="shot"><a href="../assets/shots/admin-branding.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-branding.png" alt="Branding: 10 themes with live preview" width="1600" height="900"></a><figcaption>Branding: 10 themes with live preview</figcaption></figure>
 
