@@ -130,6 +130,35 @@ npm run dev</code></pre>
 <p>Afterwards delete the screen in the admin panel as well. To reinstall, simply run the install command again.</p>
 </section>
 
+<section id="pi-image">
+<h2>Raspberry Pi image</h2>
+<p>Two ready-to-flash images based on the official Raspberry Pi OS Lite (64-bit), for Raspberry Pi 3, 4, 5 and Zero 2 W. On the first start they download and install the <b>latest Narancs Signage release</b>, so they never go out of date.</p>
+<table>
+  <tr><th>Image</th><th>What runs on the Pi</th></tr>
+  <tr><td><b>Server + display</b> (all-in-one)</td><td>The server and its own screen. Other displays can be paired to it too.</td></tr>
+  <tr><td><b>Display only</b></td><td>The player; it connects to your server, set in <code>narancs-signage.txt</code>.</td></tr>
+</table>
+<h3 id="pi-flash">Flashing with Raspberry Pi Imager</h3>
+<ol>
+  <li>In Raspberry Pi Imager open <b>App Options → Content Repository</b>, choose a custom URL and enter:<pre><code>https://github.com/mzzg-bazsi/narancs-signage/releases/download/pi-image/narancs-signage-pi.json</code></pre></li>
+  <li>Choose your device, then <b>Narancs Signage (server + display)</b> or <b>Narancs Signage (display only)</b>, then the SD card.</li>
+  <li>In the customisation step set the host name, user name and password, Wi-Fi and SSH, like for any Raspberry Pi OS.</li>
+  <li><b>Display only:</b> after writing, open the <code>bootfs</code> partition (it appears on Mac and Windows too), edit <code>narancs-signage.txt</code> and set <code>SERVER=http://SERVER-IP:8080</code>.</li>
+  <li>Put the card in the Pi and power it on. The first start needs internet and takes 5–15 minutes; the screen shows the progress, then the device restarts and shows a pairing code.</li>
+  <li><b>Server + display:</b> open the admin address shown on the screen (<code>http://PI-IP:8080/admin/</code>), create your account, and pair the screen with its code under <b>Screens → New screen</b>.</li>
+</ol>
+<p class="note">You can also download the <code>.img.xz</code> files from the <a href="https://github.com/mzzg-bazsi/narancs-signage/releases/tag/pi-image">pi-image release</a> and write them with <i>Use custom</i> or balenaEtcher. Some Imager versions don't offer the customisation step for files selected this way – then use Ethernet, or the content repository above.</p>
+<h3 id="pi-settings">Settings in narancs-signage.txt</h3>
+<table>
+  <tr><th>Setting</th><th>Description</th></tr>
+  <tr><td><code>SERVER</code></td><td>Display only: address of your server, e.g. <code>http://192.168.1.10:8080</code> (required).</td></tr>
+  <tr><td><code>PORT</code></td><td>Server + display: port of the server and the admin panel (default 8080).</td></tr>
+  <tr><td><code>ROTATE</code></td><td>Optional screen rotation: 90, 180 or 270.</td></tr>
+  <tr><td><code>NIGHTLY_REBOOT</code></td><td><code>yes</code>: restart the device every night at 4:30.</td></tr>
+</table>
+<p>The settings are read on the first start. If the installation fails (for example without internet), it is retried at every start; the log is in <code>journalctl -u narancs-firstboot</code>. Later updates work like on any installation: run the installer again.</p>
+</section>
+
 <section id="admin">
 <h2>Admin panel</h2>
 <p>The admin panel works on desktop and mobile, in light or dark mode. Most changes reach the screens immediately after saving. In editors, <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>S</kbd> saves.</p>

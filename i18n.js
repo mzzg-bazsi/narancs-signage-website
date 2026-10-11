@@ -29,6 +29,7 @@
     "✓ = available · – = not stated on the vendor's public pricing or feature pages. Prices per screen per month, billed annually, from the vendors' public pages, checked on 10 October 2026. <sup>1</sup> Xibo: cloud plans on request; the self-hosted CMS needs paid player licences except for the open-source Windows player. All trademarks belong to their owners.": "✓ = elérhető · – = a gyártó nyilvános ár- vagy funkcióoldalán nincs feltüntetve. Az árak kijelzőnként és havonta, éves számlázással értendők, a gyártók nyilvános oldalai alapján, 2026. október 10-i állapot szerint. <sup>1</sup> Xibo: a felhős csomagok ára egyedi ajánlat; a saját szerveres CMS-hez fizetős lejátszó licencek kellenek, kivéve a nyílt forrású Windows lejátszót. Minden védjegy a tulajdonosáé.",
     "Compare": "Összehasonlítás",
     "Templates": "Sablonok",
+    "Using a Raspberry Pi? Flash a <a href=\"docs/#pi-image\">ready-made image</a> instead – it installs everything on the first start, as a display or as server and display in one.": "Raspberry Pi-od van? Írj ki egy <a href=\"docs/#pi-image\">kész image-et</a> – az első induláskor mindent feltelepít, kijelzőként vagy szerverként és kijelzőként egyben.",
     "Split screen editor": "Osztott képernyő szerkesztő",
     "Reports (proof of play)": "Riportok (lejátszási igazolás)",
     "Split screen: meetings and clock": "Osztott képernyő: megbeszélések és óra",

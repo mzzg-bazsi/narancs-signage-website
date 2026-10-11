@@ -130,6 +130,35 @@ npm run dev</code></pre>
 <p>Utána az admin felületen is töröld a képernyőt. Újratelepítéshez egyszerűen futtasd újra a telepítő parancsot.</p>
 </section>
 
+<section id="pi-image">
+<h2>Raspberry Pi image</h2>
+<p>Két kiírásra kész image a hivatalos Raspberry Pi OS Lite (64 bites) alapján, Raspberry Pi 3, 4, 5 és Zero 2 W eszközökre. Az első induláskor letöltik és telepítik a <b>legfrissebb Narancs Signage kiadást</b>, így sosem avulnak el.</p>
+<table>
+  <tr><th>Image</th><th>Mi fut a Pi-n</th></tr>
+  <tr><td><b>Szerver + kijelző</b> (egyben)</td><td>A szerver és a saját kijelzője. Más kijelzők is párosíthatók hozzá.</td></tr>
+  <tr><td><b>Csak kijelző</b></td><td>A lejátszó; a <code>narancs-signage.txt</code>-ben megadott szerverhez csatlakozik.</td></tr>
+</table>
+<h3 id="pi-flash">Kiírás Raspberry Pi Imagerrel</h3>
+<ol>
+  <li>A Raspberry Pi Imagerben nyisd meg az <b>App Options → Content Repository</b> beállítást, válaszd az egyéni URL-t, és add meg:<pre><code>https://github.com/mzzg-bazsi/narancs-signage/releases/download/pi-image/narancs-signage-pi.json</code></pre></li>
+  <li>Válaszd ki az eszközt, majd a <b>Narancs Signage (server + display)</b> vagy a <b>Narancs Signage (display only)</b> image-et, végül az SD kártyát.</li>
+  <li>A testreszabás lépésben add meg a gépnevet, a felhasználónevet és jelszót, a Wi-Fit és az SSH-t – ugyanúgy, mint bármely Raspberry Pi OS-nél.</li>
+  <li><b>Csak kijelző:</b> kiírás után nyisd meg a <code>bootfs</code> partíciót (Macen és Windowson is látszik), szerkeszd a <code>narancs-signage.txt</code>-t, és add meg: <code>SERVER=http://SZERVER-IP:8080</code>.</li>
+  <li>Tedd a kártyát a Pi-be, és kapcsold be. Az első induláshoz internet kell, és 5–15 percig tart; a képernyőn látszik a folyamat, utána az eszköz újraindul, és párosító kódot mutat.</li>
+  <li><b>Szerver + kijelző:</b> nyisd meg a képernyőn látható admin címet (<code>http://PI-IP:8080/admin/</code>), hozd létre a fiókodat, majd a <b>Képernyők → Új képernyő</b> alatt párosítsd a kijelzőt a kódjával.</li>
+</ol>
+<p class="note">A <code>.img.xz</code> fájlokat a <a href="https://github.com/mzzg-bazsi/narancs-signage/releases/tag/pi-image">pi-image kiadásból</a> is letöltheted, és a <i>Use custom</i> opcióval vagy balenaEtcherrel kiírhatod. Egyes Imager verziók így kiválasztott fájlnál nem kínálják fel a testreszabást – ilyenkor használj Ethernetet, vagy a fenti tartalomtárat.</p>
+<h3 id="pi-settings">Beállítások a narancs-signage.txt-ben</h3>
+<table>
+  <tr><th>Beállítás</th><th>Leírás</th></tr>
+  <tr><td><code>SERVER</code></td><td>Csak kijelző: a szerver címe, pl. <code>http://192.168.1.10:8080</code> (kötelező).</td></tr>
+  <tr><td><code>PORT</code></td><td>Szerver + kijelző: a szerver és az admin felület portja (alapból 8080).</td></tr>
+  <tr><td><code>ROTATE</code></td><td>Opcionális képernyő-elforgatás: 90, 180 vagy 270.</td></tr>
+  <tr><td><code>NIGHTLY_REBOOT</code></td><td><code>yes</code>: az eszköz minden éjjel 4:30-kor újraindul.</td></tr>
+</table>
+<p>A beállításokat az első induláskor olvassa be. Ha a telepítés nem sikerül (pl. internet nélkül), minden indításkor újrapróbálja; a napló: <code>journalctl -u narancs-firstboot</code>. A későbbi frissítés ugyanúgy megy, mint bármely telepítésnél: futtasd újra a telepítőt.</p>
+</section>
+
 <section id="admin">
 <h2>Az admin felület</h2>
 <p>Az admin felület asztali gépen és mobilon is működik, világos és sötét módban. A legtöbb változás mentés után azonnal megjelenik a képernyőkön. A szerkesztőkben a <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>S</kbd> ment.</p>
