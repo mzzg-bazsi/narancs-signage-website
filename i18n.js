@@ -306,6 +306,11 @@
   window.t = (s) => (lang === 'hu' && HU[s]) || s;
   document.documentElement.lang = lang;
 
+  // magyarul a képernyőképek magyar felületű változata (assets/shots/hu/), a nagyító linkje is
+  if (lang === 'hu') for (const el of document.querySelectorAll('img[src*="assets/shots/"], a[href*="assets/shots/"]')) {
+    const at = el.tagName === 'A' ? 'href' : 'src', v = el.getAttribute(at);
+    if (!v.includes('/shots/hu/')) el.setAttribute(at, v.replace('/shots/', '/shots/hu/'));
+  }
   if (lang === 'hu') {
     // data-i18n: az elem teljes belső HTML-je egy kulcs (vegyes tartalomhoz), máshol szövegcsomópontonként
     for (const el of document.querySelectorAll('[data-i18n]')) { const k = el.innerHTML.trim(); if (HU[k]) el.innerHTML = HU[k]; }
