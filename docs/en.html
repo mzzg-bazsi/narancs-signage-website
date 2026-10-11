@@ -303,6 +303,7 @@ npm run dev</code></pre>
 <ul>
   <li><b>Language</b> of the admin panel, the screens and the server messages (English or Hungarian).</li>
   <li><b>Password</b> change, <b>users</b> with roles and <b>API keys</b> (administrators).</li>
+  <li><b>Network (Raspberry Pi)</b>: only when the server runs on a Raspberry Pi – switch between automatic address (DHCP) and a <b>static IP address</b> (address with prefix, e.g. <code>192.168.1.50/24</code>, gateway, DNS). After applying, the admin panel is at the new address. If you lock yourself out, run <code>sudo signage-network dhcp</code> on the device. On a Pi installed before v1.21.0, run the server installer again to enable it.</li>
   <li><b>Sample content</b>: recreate the default sample playlist.</li>
   <li><b>System and backup</b>: data folder, uptime, player address, database download, reload all screens.</li>
 </ul>
