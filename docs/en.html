@@ -276,6 +276,7 @@ npm run dev</code></pre>
   <li><b>Colour the content</b> — new content uses the theme colours by default; <b>Apply branding to all content</b> converts older content with custom colours. Images and videos are not changed.</li>
 </ol>
 <p>Changes show immediately in the preview and reach the screens after saving. A screen can use a different theme (<b>Screens → Edit → Look</b>); the logo and header stay global.</p>
+<p>The settings are grouped into tabs – <b>Theme</b>, <b>Logo &amp; name</b>, <b>Header</b>, <b>Fine-tuning</b> and <b>Recolour</b> – while the live preview stays visible next to them.</p>
 <figure class="shot"><a href="../assets/shots/admin-branding.png" target="_blank" rel="noopener"><img loading="lazy" src="../assets/shots/admin-branding.png" alt="Branding: 10 themes with live preview" width="1600" height="900"></a><figcaption>Branding: 10 themes with live preview</figcaption></figure>
 
 <h3 id="alerts">Emergency alerts</h3>
@@ -300,12 +301,14 @@ npm run dev</code></pre>
   -d '{"title":"Fire alarm","message":"Leave the building","level":"danger","minutes":30}'</code></pre>
 
 <h3 id="settings">Settings</h3>
+<p>The page has three tabs: <b>General</b>, <b>Users and API</b> and <b>System</b>.</p>
 <ul>
   <li><b>Language</b> of the admin panel, the screens and the server messages (English or Hungarian).</li>
   <li><b>Password</b> change, <b>users</b> with roles and <b>API keys</b> (administrators).</li>
   <li><b>Network (Raspberry Pi)</b>: only when the server runs on a Raspberry Pi – switch between automatic address (DHCP) and a <b>static IP address</b> (address with prefix, e.g. <code>192.168.1.50/24</code>, gateway, DNS). After applying, the admin panel is at the new address. If you lock yourself out, run <code>sudo signage-network dhcp</code> on the device. On a Pi installed before v1.21.0, run the server installer again to enable it.</li>
   <li><b>Sample content</b>: recreate the default sample playlist.</li>
-  <li><b>System and backup</b>: version and <b>Check for updates</b>, data folder, uptime, player address, database download, reload all screens. If a new version is available, the server installed with the installer (Ubuntu/Debian, Raspberry Pi) updates itself with <b>Update now</b> – it restarts, then the screens reload. With Docker or on a Mac the matching command is shown. The button appears after installing v1.22.0 or later with the installer; from the command line: <code>sudo signage-update</code>.</li>
+  <li><b>Backup</b>: download the database; for a full backup with media files run <code>sudo signage-backup</code> on the server (it also runs every day).</li>
+  <li><b>System</b>: version and <b>Check for updates</b>, data folder, uptime, player address, reload all screens. If a new version is available, the server installed with the installer (Ubuntu/Debian, Raspberry Pi) updates itself with <b>Update now</b> – it restarts, then the screens reload. With Docker or on a Mac the matching command is shown. The button appears after installing v1.22.0 or later with the installer; from the command line: <code>sudo signage-update</code>.</li>
 </ul>
 </section>
 
