@@ -40,6 +40,7 @@
 <pre><code>curl -fsSL https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.sh | sudo bash -s -- [--port 8080] [--data /var/lib/narancs-signage]</code></pre>
 <p>From a cloned project folder the same installer runs as <code>sudo ./install/install-server.sh [options]</code>.</p>
 <p class="note"><b>macOS:</b> run the same command without <code>sudo</code>. It installs Node.js with Homebrew if needed and starts the server at login (LaunchAgent). Data: <code>~/Library/Application Support/Narancs Signage/data</code>, log: <code>~/Library/Logs/narancs-signage.log</code>. Other systems: use Docker.</p>
+<p class="note"><b>Windows:</b> open PowerShell <b>as Administrator</b> and run <code>irm https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/install.ps1 | iex</code>. It asks whether to install the <b>server only</b>, the <b>display only</b> (Microsoft Edge full screen at sign-in, showing another server) or <b>both</b> on this PC. The server runs at startup as a scheduled task (Node.js is installed with winget if missing); data: <code>C:\ProgramData\NarancsSignage\data</code>, log: <code>C:\ProgramData\NarancsSignage\server.log</code>. Running it again updates the program; add <code>-Uninstall</code> (see the end of the installer output) to remove it, the data is kept. For an unattended display turn on automatic sign-in.</p>
 <table>
   <tr><th>Option</th><th>Default</th><th>Description</th></tr>
   <tr><td><code>--port</code></td><td>8080</td><td>HTTP port of the server.</td></tr>
