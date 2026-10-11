@@ -436,3 +436,16 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
 @media (max-width: 640px) { .doc .shot-pair { grid-template-columns: minmax(0, 1fr); } }
 
 .pi-note { margin: 18px 0 0; padding: 14px 18px; border-radius: 14px; background: var(--soft); color: #5a4334; font-size: 15px; }
+
+/* Platformok a hero alatt: kis egyszínű ikonok */
+.platforms { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.platforms li { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 10px; border-radius: 999px; background: var(--soft); color: #5a4334; font-size: 13.5px; font-weight: 600; }
+.platforms svg { width: 16px; height: 16px; flex: none; color: var(--primary); }
+/* Windows letöltés a telepítés szakaszban */
+.win-note { display: flex; align-items: center; gap: 16px; margin: 18px 0 0; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line, #f0dccb); background: #fff; }
+.win-note > svg { width: 30px; height: 30px; flex: none; color: var(--primary); }
+.win-note > div { flex: 1; color: #5a4334; font-size: 15px; }
+@media (max-width: 640px) { .win-note { flex-wrap: wrap; } .win-note .btn { width: 100%; text-align: center; } }
+/* Dokumentáció: támogatott platformok kis ikonokkal */
+.platform-table img.pf { width: 18px; height: 18px; vertical-align: -4px; margin-right: 8px; }
+.platform-table td:nth-child(2), .platform-table td:nth-child(3) { white-space: nowrap; }
