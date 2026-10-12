@@ -141,6 +141,7 @@
   //  Gyorsítótárazott adatok
   // =====================================================================
   const cache = {};
+  let LAN = null; // a szerver helyi hálózati címei (csak ha az admint a szerver gépén, localhostról nyitották meg)
   async function load(kind, force = false) {
     if (!cache[kind] || force) cache[kind] = await GET(`/api/${kind}`);
     return cache[kind];
@@ -285,7 +286,7 @@
       const chips = h('div', { class: 'row', style: { gap: '6px' } }, themeOpts.map(([v, l]) => h('button', { type: 'button', class: 'btn sm', title: v || tr('Az arculat alapértelmezett háttere'), onclick: () => { if (v) obj[key] = v; else delete obj[key]; inp.value = v; o.onchange?.(); } },
         h('span', { class: 'color-dot', style: { background: themeCss(v || 'var(--bg)'), border: '1px solid var(--border-strong)' } }), l)));
       const presets = ['#1b130e', '#0f172a', '#ffffff', 'linear-gradient(135deg, #3b2312, #a8521d)', 'linear-gradient(135deg, #f59e5b, #e0565b)', 'linear-gradient(135deg, #0f2027, #2c5364)', 'linear-gradient(135deg, #134e5e, #71b280)', 'linear-gradient(160deg, #24170e, #101010)'];
-      const inp = h('input', { class: 'input', value: obj[key] || '', placeholder: tr('pl. #222 vagy linear-gradient(...)') });
+      const inp = h('input', { class: 'input', value: obj[key] || '', placeholder: tr('pl. {c} vagy linear-gradient(...)', { c: '#222' }) });
       const sw = h('div', { class: 'row', style: { gap: '6px' } }, presets.map((p) => h('button', { type: 'button', title: p, style: { width: '30px', height: '30px', borderRadius: '8px', border: '1px solid var(--border-strong)', background: p, cursor: 'pointer' }, onclick: () => { obj[key] = p; inp.value = p; o.onchange?.(); } })));
       inp.addEventListener('input', () => { obj[key] = inp.value; o.onchange?.(); });
       return F.wrap(label, h('div', { class: 'stack', style: { gap: '8px' } }, chips, sw, inp), { hint: tr('Üresen hagyva az Arculat menüben beállított téma hátterét használja.'), ...o });
@@ -571,7 +572,7 @@
     if (st.setup) return authScreen(true);
     if (!st.user) { ME = null; return authScreen(false); }
     ME = st.user;
-    try { const st0 = await GET('/api/settings'); ME.org_name = st0.org_name; ME.logo_url = st0.logo_url; cache.branding = st0.branding; } catch { /* */ }
+    try { const st0 = await GET('/api/settings'); ME.org_name = st0.org_name; ME.logo_url = st0.logo_url; cache.branding = st0.branding; cache.custom_themes = st0.custom_themes; LAN = st0.lan || null; } catch { /* */ }
     shell();
     route();
     refreshBadges();
@@ -819,14 +820,24 @@
     });
   }
 
+  // A kijelzőknek megadandó cím: ha az admint a szerver gépén localhostról nyitották meg (pl. a Windows tálca ikonról),
+  // a localhost a kijelzőn nem működne – ilyenkor a szerver helyi hálózati címe
+  function serverOrigin() {
+    const local = /^(localhost|127\.|\[::1\]$)/.test(location.hostname);
+    return local && LAN?.length ? `${location.protocol}//${LAN[0]}${location.port ? `:${location.port}` : ''}` : location.origin;
+  }
+
   function installHint() {
-    const cmd = `curl -fsSL ${location.origin}/install-player.sh | sudo bash`;
+    const cmd = `curl -fsSL ${serverOrigin()}/install-player.sh | sudo bash`;
     return h('div', { class: 'small', style: { background: 'var(--primary-softer)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 14px' } },
       h('b', {}, tr('💡 Új kijelző telepítése (Ubuntu Server / Raspberry Pi, ARM vagy x86):')),
       h('div', { class: 'row', style: { marginTop: '8px', flexWrap: 'nowrap' } },
         h('code', { class: 'code-pill grow', style: { overflowX: 'auto', whiteSpace: 'nowrap', padding: '6px 10px' } }, cmd),
         btn(tr('Másolás'), () => { navigator.clipboard?.writeText(cmd).then(() => toast(tr('Parancs vágólapra másolva')), () => toast(cmd)); }, { cls: 'sm', ic: 'copy' })),
-      h('div', { class: 'muted', style: { marginTop: '6px' } }, tr('Vagy nyisd meg bármely böngészőben: '), h('span', { class: 'code-pill' }, `${location.origin}/player/`)));
+      h('div', { class: 'row', style: { marginTop: '10px', alignItems: 'center' } },
+        h('b', { class: 'grow' }, tr('🪟 Windows kijelző: a telepítőben válaszd a „Csak kijelző – kioszk gép” módot, szerver címnek ezt add meg: '), h('span', { class: 'code-pill' }, serverOrigin())),
+        h('a', { class: 'btn sm', href: 'https://github.com/mzzg-bazsi/narancs-signage/releases/latest/download/NarancsSignageSetup.exe' }, icon('download'), tr('Windows telepítő'))),
+      h('div', { class: 'muted', style: { marginTop: '6px' } }, tr('Vagy nyisd meg bármely böngészőben: '), h('span', { class: 'code-pill' }, `${serverOrigin()}/player/`)));
   }
 
   // Újraindítási lehetőségek egy képernyőre (screen) vagy az összesre (null)
@@ -845,7 +856,7 @@
       h('div', { class: 'stat', style: { padding: 0 } }, h('div', { class: 'ic' }, icon(ic))),
       h('div', { class: 'grow' }, h('b', {}, title), h('div', { class: 'small muted' }, desc), note ? h('div', { class: 'small', style: { color: 'var(--danger)' } }, note) : null),
       btn(tr('Indítás'), () => send(command, title), { cls: command === 'reboot' ? 'sm danger' : 'sm primary', disabled: !enabled }));
-    const noAgent = tr('Ehhez a telepített lejátszó ügynöke szükséges (install-player.sh). Futtasd újra a telepítőt a kijelzőn.');
+    const noAgent = tr('Ehhez a telepített lejátszó ügynöke szükséges (install-player.sh, vagy Windowson a „Csak kijelző” telepítés). Futtasd újra a telepítőt a kijelzőn.');
     const quick = h('div', { class: 'row', style: { marginBottom: '14px' } },
       btn(tr('Azonosítás'), async () => {
         try {
@@ -981,6 +992,7 @@
           F.select(tr('Alapértelmezett lejátszási lista'), s, 'playlist_id', plOpts, { number: true, full: true, hint: tr('Ez fut, ha egyik ütemezési szabály sem aktív.') }),
           F.number(tr('Visszatérés érintés után (mp)'), st, 'idle_return', { min: 10, max: 600, placeholder: '45', hint: tr('Ennyi tétlenség után folytatódik az automatikus lejátszás.') }),
           F.toggle(tr('Virtuális billentyűzet űrlapokhoz'), st, 'virtual_keyboard', { defaultOn: true, hint: tr('Érintőképernyőhöz, ha nincs fizikai billentyűzet') }),
+          F.toggle(tr('Lapozás érintéssel'), st, 'touch_nav', { full: true, defaultOn: true, hint: tr('Érintőképernyőn a bal szél érintése az előző, a jobb szélé a következő tartalomra lapoz. Menün, űrlapon és interaktív weboldalon a szélek helyett nyilak jelennek meg.') }),
           F.toggle(tr('Tablet mód (érintőképernyő)'), st, 'tablet', { full: true, hint: tr('Bekapcsolva soha nem jelenik meg egérmutató, csak érinteni lehet. Kikapcsolva egér mozgatásakor 3 másodpercig látszik a mutató, utána eltűnik.') }));
       } else if (tab === 'schedule') {
         const list = h('div');
@@ -1006,7 +1018,8 @@
           F.textarea(tr('Hírszalag (soronként egy üzenet)'), st, 'ticker', { rows: 3, placeholder: tr('Pl. Ma 14:00-kor tűzriadó gyakorlat\nA kávézó ma 16:00-ig van nyitva'), hint: tr('Üresen hagyva nem jelenik meg.') }),
           F.number(tr('Hírszalag sebesség (%)'), st, 'ticker_speed', { min: 25, max: 400, placeholder: '100' }),
           F.color(tr('Hírszalag színe'), st, 'ticker_color'),
-          F.select(tr('Arculat / téma'), st, 'theme', [['', tr('Globális arculat (Arculat menü)')], ...Object.entries(window.SIGNAGE_THEMES.THEMES).map(([k, t]) => [k, `${tr(t.name)} – ${tr(t.desc)}`])], { full: true, hint: tr('Ez a képernyő eltérő témát is használhat (pl. étterem bordó, recepció kék). A logó és a fejléc a globális marad.') }),
+          F.select(tr('Arculat / téma'), st, 'theme', [['', tr('Globális arculat (Arculat menü)')], ...Object.entries({ ...window.SIGNAGE_THEMES.THEMES, ...(cache.custom_themes || {}) }).map(([k, t]) => [k, t.desc ? `${tr(t.name)} – ${tr(t.desc)}` : tr(t.name)])], { full: true, hint: tr('Ez a képernyő eltérő témát is használhat (pl. étterem bordó, recepció kék). A logó és a fejléc a globális marad.') }),
+          F.seg(tr('Sötét / világos mód'), st, 'theme_mode', [['', tr('A téma szerint')], ['dark', tr('Sötét')], ['light', tr('Világos')]], { def: '' }),
           F.color(tr('Kiemelő szín felülírása'), st, 'accent', { theme: false, hint: tr('Csak ezen a képernyőn, a téma kiemelő színe helyett') }));
       } else if (tab === 'power') {
         content = h('div', { class: 'fields' },
@@ -1541,7 +1554,7 @@
           : isVid ? h('video', { src: m.url, controls: true, style: { maxWidth: '100%', maxHeight: '55vh', borderRadius: '10px' } })
             : h('iframe', { src: m.url, style: { width: '100%', height: '55vh', border: 0 } }),
         h('div', { class: 'fields' }, F.text(tr('Név'), data, 'name'), F.wrap(tr('Adatok'), h('div', { class: 'small muted' }, `${m.mime} · ${fmtBytes(m.size)} · ${fmtDate(m.created_at)}`))),
-        h('div', { class: 'small' }, tr('Közvetlen link: '), h('a', { href: m.url, target: '_blank' }, location.origin + m.url))),
+        h('div', { class: 'small' }, tr('Közvetlen link: '), h('a', { href: m.url, target: '_blank' }, serverOrigin() + m.url))),
       foot: [
         btn(tr('Törlés'), async () => {
           if (!(await confirmBox(tr('Biztosan törlöd: „{name}”? A tartalmakból is eltűnik.', { name: m.name }), { ok: tr('Törlés') }))) return;
@@ -1812,7 +1825,7 @@
   function themeCss(str) {
     const T = window.SIGNAGE_THEMES;
     if (!T) return str;
-    const c = T.resolve(cache.branding || {}).colors;
+    const c = T.resolve(cache.branding || {}, '', { custom: cache.custom_themes }).colors;
     const map = { '--accent': c.accent, '--accent-fg': c.accent_fg, '--bg': c.bg, '--bg2': c.bg2, '--fg': c.fg, '--surface': c.surface, '--muted': c.muted };
     return String(str).replace(/var\((--[\w-]+)\)/g, (m, v) => map[v] || m);
   }
@@ -1820,6 +1833,7 @@
   // =====================================================================
   //  Arculat (színek, logók, betűk, fejléc, előre megadott témák)
   // =====================================================================
+  let brandTab = 'theme', settingsTab = 'general'; // a megnyitott fül újrarajzolás (mentés) után is marad
   async function pageBranding(view) {
     const T = window.SIGNAGE_THEMES;
     const [st] = await Promise.all([GET('/api/settings'), load('media', true)]);
@@ -1827,6 +1841,9 @@
     st.branding.colors ||= {};
     st.branding.header ||= {};
     const b = st.branding;
+    const customs = st.custom_themes ||= {};
+    const all = () => ({ ...customs, ...T.THEMES });
+    const theme = () => all()[b.preset] || T.THEMES.narancs;
     let orig = JSON.stringify(st);
     dirty = () => JSON.stringify(st) !== orig;
 
@@ -1835,40 +1852,114 @@
       const logo = st.logo_media_id && mediaById(st.logo_media_id);
       pv.frame.contentWindow?.postMessage({
         type: 'branding',
-        org: { name: st.org_name, slogan: st.slogan, logo_media_id: st.logo_media_id || null, branding: clone(b) },
+        org: { name: st.org_name, slogan: st.slogan, logo_media_id: st.logo_media_id || null, branding: clone(b), custom_themes: clone(customs) },
         media: logo ? { [logo.id]: { id: logo.id, url: logo.url, mime: logo.mime, name: logo.name } } : {},
       }, location.origin);
     }, 120);
     pv.frame.addEventListener('load', () => setTimeout(push, 400));
     const ch = () => { push(); drawSwatches(); };
 
-    // --- Témák galériája ---
-    const gallery = h('div', { class: 'theme-grid' });
-    const drawGallery = () => gallery.replaceChildren(...Object.entries(T.THEMES).map(([k, t]) => {
-      const c = t.colors;
-      return h('button', { type: 'button', class: `theme-tile ${b.preset === k ? 'on' : ''}`, onclick: async () => {
-        const custom = Object.keys(b.colors).length || b.font || b.head_font || b.radius;
-        if (custom && b.preset !== k && !(await confirmBox(tr('A téma váltása törli az egyedi szín- és betűbeállításokat. Folytatod?'), { ok: tr('Téma váltása'), danger: false }))) return;
+    // --- Témák galériája: beépített + saját (mentett / importált) témák, sötét és világos mód ---
+    const gallery = h('div', { class: 'stack' });
+    const hasCustom = () => Object.keys(b.colors).length || b.font || b.head_font || b.radius;
+    const saveCustoms = async () => { await PUT('/api/settings', { custom_themes: customs }); cache.custom_themes = clone(customs); orig = JSON.stringify({ ...JSON.parse(orig), custom_themes: customs }); };
+    const slug = (x) => String(x || 'tema').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'tema';
+    const exportTheme = (t) => {
+      const a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify({ format: 'narancs-theme', version: 1, ...t }, null, 1)], { type: 'application/json' })), download: `${slug(t.name)}.narancs-theme.json` });
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    };
+    const newKey = () => `my_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const themeFile = h('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: async () => {
+      const f = themeFile.files[0]; themeFile.value = '';
+      if (!f) return;
+      let j;
+      try { j = JSON.parse(await f.text()); } catch { j = null; }
+      if (j?.format !== 'narancs-theme') return toast(tr('Ez nem Narancs Signage téma fájl'), 'err');
+      const k = newKey();
+      customs[k] = { name: j.name, desc: j.desc, mode: j.mode, font: j.font, head_font: j.head_font, radius: j.radius, dark: j.dark, light: j.light };
+      try { await saveCustoms(); toast(tr('Téma importálva: {name}', { name: j.name })); } catch (e) { delete customs[k]; fail(e); }
+      drawGallery();
+    } });
+    const saveAsTheme = () => {
+      const r = T.resolve(b, '', { custom: customs });
+      const base = theme();
+      const mine = b.preset.startsWith('my_');
+      const meta = { name: mine ? base.name : '', desc: mine ? base.desc : '' };
+      const m = modal({
+        title: tr('Mentés saját témaként'),
+        body: h('div', { class: 'stack' },
+          h('p', { class: 'small muted', style: { margin: 0 } }, tr('A jelenlegi színek, betűk és forma saját témaként a galériába kerülnek. Fájlba exportálva meg is oszthatod, más pedig importálhatja.')),
+          F.text(tr('Név'), meta, 'name'), F.text(tr('Leírás'), meta, 'desc')),
+        foot: [btn(tr('Mégse'), () => m.close()), btn(tr('Mentés'), async () => {
+          if (!meta.name.trim()) return toast(tr('Adj nevet a témának'), 'err');
+          const other = r.mode === 'dark' ? 'light' : 'dark';
+          // a másik mód a kiinduló téma megfelelő változata, a saját kiemelő színnel
+          const otherPal = { ...T.palette(base, other), ...(b.colors.accent ? { accent: b.colors.accent } : {}), ...(b.colors.accent_fg ? { accent_fg: b.colors.accent_fg } : {}) };
+          const k = mine && meta.name.trim() === base.name ? b.preset : newKey();
+          const prev = customs[k];
+          customs[k] = { name: meta.name.trim(), desc: meta.desc.trim(), mode: r.mode, font: r.font, head_font: r.head_font, radius: r.radius, [r.mode]: r.colors, [other]: (prev && prev[other]) || otherPal };
+          try { await saveCustoms(); } catch (e) { if (prev) customs[k] = prev; else delete customs[k]; return fail(e); }
+          b.preset = k; b.mode = r.mode; b.colors = {}; delete b.font; delete b.head_font; delete b.radius;
+          m.close(); drawGallery(); drawCustom(); ch();
+          toast(tr('Téma elmentve – a képernyőkre a Mentés gombbal kerül ki'));
+        }, { cls: 'primary', ic: 'save' })],
+      });
+    };
+    const tile = ([k, t]) => {
+      const c = T.palette(t, b.mode || t.mode);
+      const el = h('button', { type: 'button', class: `theme-tile ${b.preset === k ? 'on' : ''}`, onclick: async () => {
+        if (hasCustom() && b.preset !== k && !(await confirmBox(tr('A téma váltása törli az egyedi szín- és betűbeállításokat. Folytatod?'), { ok: tr('Téma váltása'), danger: false }))) return;
         b.preset = k; b.colors = {}; delete b.font; delete b.head_font; delete b.radius;
         drawGallery(); drawCustom(); ch();
       } },
       h('div', { class: 'theme-pv', style: { background: `linear-gradient(135deg, ${c.bg2}, ${c.bg})`, color: c.fg, fontFamily: T.FONTS[t.head_font]?.css } },
         h('div', { class: 'tp-title' }, tr('Aa Üdv!')),
         h('div', { class: 'row', style: { gap: '5px' } }, h('span', { class: 'tp-btn', style: { background: c.accent, color: c.accent_fg } }, tr('Gomb')), h('span', { class: 'tp-card', style: { background: c.surface } }))),
-      h('div', { class: 'theme-meta' }, h('b', {}, tr(t.name)), h('span', {}, tr(t.desc))));
-    }));
+      h('div', { class: 'theme-meta' }, h('b', {}, tr(t.name)), t.desc ? h('span', {}, tr(t.desc)) : null));
+      if (!k.startsWith('my_')) return el;
+      return h('div', { class: 'theme-tile-wrap' }, el, h('div', { class: 'theme-tile-acts' },
+        btn('', () => exportTheme(t), { cls: 'sm icon', ic: 'download', title: tr('Exportálás fájlba (megosztáshoz)') }),
+        btn('', async () => {
+          if (!(await confirmBox(tr('Törlöd a(z) „{name}” témát?', { name: t.name }), { ok: tr('Törlés') }))) return;
+          const prev = customs[k];
+          delete customs[k];
+          try { await saveCustoms(); } catch (e) { customs[k] = prev; return fail(e); }
+          if (b.preset === k) { b.preset = 'narancs'; ch(); }
+          drawGallery(); drawCustom();
+        }, { cls: 'sm icon', ic: 'trash', title: tr('Törlés') })));
+    };
+    const drawGallery = () => {
+      const prevMode = b.mode;
+      const modeSeg = F.seg(tr('Mód'), b, 'mode', [['dark', tr('Sötét')], ['light', tr('Világos')]], { def: theme().mode || 'dark', onchange: async () => {
+        // az egyedi színek az előző módhoz készültek
+        if (Object.keys(b.colors).length) {
+          if (!(await confirmBox(tr('A mód váltása törli az egyedi színeket. Folytatod?'), { ok: tr('Mód váltása'), danger: false }))) { b.mode = prevMode; if (b.mode === undefined) delete b.mode; return drawGallery(); }
+          b.colors = {};
+        }
+        drawGallery(); drawCustom(); ch();
+      } });
+      const mine = Object.entries(customs);
+      gallery.replaceChildren(
+        h('div', { class: 'row between', style: { alignItems: 'flex-end' } }, modeSeg,
+          h('div', { class: 'row' }, themeFile,
+            btn(tr('Importálás'), () => themeFile.click(), { ic: 'upload', title: tr('Mások által megosztott téma fájl betöltése') }),
+            btn(tr('Mentés saját témaként'), saveAsTheme, { ic: 'save' }))),
+        h('div', { class: 'theme-grid' }, Object.entries(T.THEMES).map(tile)),
+        mine.length ? h('b', {}, tr('Saját témák')) : null,
+        mine.length ? h('div', { class: 'theme-grid' }, mine.map(tile)) : null);
+    };
     drawGallery();
 
     // --- Egyedi színek, betűk, forma ---
     const custom = h('div');
     const swatches = h('div', { class: 'row', style: { gap: '6px' } });
     const drawSwatches = () => {
-      const r = T.resolve(b);
+      const r = T.resolve(b, '', { custom: customs });
       swatches.replaceChildren(...['bg', 'bg2', 'surface', 'accent', 'accent_fg', 'fg', 'muted'].map((k) => h('span', { class: 'swatch', title: tr(T.COLOR_LABELS[k]), style: { background: r.colors[k] } })));
     };
-    const fontOpts = (withDefault) => [...(withDefault ? [['', tr('A téma szerint ({name})', { name: tr(T.FONTS[T.THEMES[b.preset]?.font]?.name || '') })]] : []), ...Object.entries(T.FONTS).map(([k, f]) => [k, tr(f.name)])];
+    const fontOpts = (withDefault) => [...(withDefault ? [['', tr('A téma szerint ({name})', { name: tr(T.FONTS[theme().font]?.name || '') })]] : []), ...Object.entries(T.FONTS).map(([k, f]) => [k, tr(f.name)])];
     const drawCustom = () => {
-      const r = T.resolve(b);
+      const r = T.resolve(b, '', { custom: customs });
       const colorField = (k) => {
         const val = b.colors[k] || '';
         const eff = r.colors[k];
@@ -1886,7 +1977,7 @@
         h('div', { class: 'field' }, h('label', {}, tr('Teljes paletta')), swatches),
         F.select(tr('Szöveg betűtípusa'), b, 'font', fontOpts(true), { onchange: (v) => { if (!v) delete b.font; drawCustom(); ch(); } }),
         F.select(tr('Címek betűtípusa'), b, 'head_font', fontOpts(true), { onchange: (v) => { if (!v) delete b.head_font; drawCustom(); ch(); } }),
-        F.seg(tr('Lekerekítés'), b, 'radius', Object.entries(T.RADIUS).map(([k, x]) => [k, tr(x.name)]), { def: T.THEMES[b.preset]?.radius, onchange: () => { drawCustom(); ch(); } }),
+        F.seg(tr('Lekerekítés'), b, 'radius', Object.entries(T.RADIUS).map(([k, x]) => [k, tr(x.name)]), { def: theme().radius, onchange: () => { drawCustom(); ch(); } }),
         h('div', { class: 'full' }, sample),
         h('div', { class: 'full small muted' }, tr('A Google betűtípusokhoz a kijelzőnek internet kell; nélküle a rendszer betűtípusa jelenik meg.'))));
       drawSwatches();
@@ -1894,6 +1985,40 @@
     drawCustom();
 
     const hd = b.header;
+    // fülek: egyszerre egy beállítás csoport, az élő előnézet mindig látszik
+    const brandCards = {
+      theme: h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Válassz témát'))), h('div', { class: 'card-body' }, gallery)),
+      org: h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Szervezet, logó és címek'))),
+            h('div', { class: 'card-body fields' },
+              F.text(tr('Szervezet neve'), st, 'org_name', { onchange: ch }),
+              F.text(tr('Szlogen / alcím'), st, 'slogan', { onchange: ch, placeholder: tr('pl. Minden, amit tudni érdemes') }),
+              F.media(tr('Logó'), st, 'logo_media_id', { accept: 'image/', onchange: ch, hint: tr('Átlátszó hátterű PNG vagy SVG ajánlott.') }),
+              F.seg(tr('Logó vízjel a sarokban'), b, 'logo_corner', [['none', tr('Nincs')], ['tl', tr('↖ Bal fent')], ['tr', tr('↗ Jobb fent')], ['bl', tr('↙ Bal lent')], ['br', tr('↘ Jobb lent')]], { def: 'none', full: true, onchange: ch }),
+              F.number(tr('Vízjel mérete (% a képernyő magasságából)'), b, 'logo_size', { min: 3, max: 30, placeholder: '9', onchange: ch }),
+              F.number(tr('Vízjel átlátszatlansága (%)'), b, 'logo_opacity', { min: 10, max: 100, placeholder: '90', onchange: ch }))),
+      header: h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Fejléc sáv a képernyők tetején'))),
+            h('div', { class: 'card-body fields' },
+              F.toggle(tr('Fejléc megjelenítése'), hd, 'enabled', { full: true, onchange: ch, hint: tr('Logó, cím, alcím és óra a képernyő tetején, minden tartalom fölött.') }),
+              F.text(tr('Cím'), hd, 'title', { placeholder: tr('üresen: a szervezet neve'), onchange: ch }),
+              F.text(tr('Alcím'), hd, 'subtitle', { placeholder: tr('üresen: a szlogen'), onchange: ch }),
+              F.seg(tr('Stílus'), hd, 'style', [['surface', tr('Háttérszín')], ['accent', tr('Kiemelő szín')], ['gradient', tr('Átmenet#szín')]], { def: 'surface', onchange: ch }),
+              h('div', { class: 'row' }, F.toggle(tr('Logó'), hd, 'show_logo', { defaultOn: true, onchange: ch }), F.toggle(tr('Óra és dátum'), hd, 'show_clock', { defaultOn: true, onchange: ch })))),
+      fine: h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Finomhangolás: színek, betűk, forma'))), h('div', { class: 'card-body' }, custom)),
+      recolor: h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Tartalmak színezése'))),
+            h('div', { class: 'card-body stack' },
+              h('p', { class: 'small muted', style: { margin: 0 } }, tr('Az új tartalmak alapból az arculat színeit használják. A korábban egyedi színekkel (háttér, szöveg, kártya- és gombszín) létrehozott tartalmakat itt egyszerre átszínezheted, így minden a kiválasztott témát követi – később témát váltva is. A képek, videók és háttérképek nem változnak.')),
+              h('div', {}, btn(tr('Összes tartalom arculat szerint'), async () => {
+                if (!(await confirmBox(tr('Minden tartalom egyedi színei az arculat színeire cserélődnek. Ez nem vonható vissza. Folytatod?'), { ok: tr('Átszínezés') }))) return;
+                try { const r = await POST('/api/slides/brandify', {}); invalidate('slides'); toast(tr('{n} / {total} tartalom átszínezve', { n: r.changed, total: r.total })); pv.reload(); } catch (e) { fail(e); }
+              }, { cls: 'primary', ic: 'palette' })))),
+    };
+    const brandTabs = h('div', { class: 'tabs-line one-row' });
+    const showBrandTab = () => {
+      brandTabs.replaceChildren(...[['theme', tr('Téma#arculat')], ['org', tr('Logó és név')], ['header', tr('Fejléc')], ['fine', tr('Finomhangolás')], ['recolor', tr('Átszínezés')]]
+        .map(([k, l]) => h('button', { type: 'button', class: brandTab === k ? 'on' : '', onclick: () => { brandTab = k; showBrandTab(); } }, l)));
+      for (const [k, el] of Object.entries(brandCards)) el.style.display = brandTab === k ? '' : 'none';
+    };
+    showBrandTab();
     view.replaceChildren(
       head(tr('Arculat'), tr('Színek, logó, betűtípusok és címek – egységes megjelenés minden képernyőn.'), [
         btn(tr('Alapértelmezés'), async () => {
@@ -1911,31 +2036,7 @@
           } catch (e) { fail(e); }
         }, { cls: 'primary', ic: 'save' })]),
       h('div', { class: 'split' },
-        h('div', { class: 'stack' },
-          h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('1. Válassz témát'))), h('div', { class: 'card-body' }, gallery)),
-          h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('2. Szervezet, logó és címek'))),
-            h('div', { class: 'card-body fields' },
-              F.text(tr('Szervezet neve'), st, 'org_name', { onchange: ch }),
-              F.text(tr('Szlogen / alcím'), st, 'slogan', { onchange: ch, placeholder: tr('pl. Minden, amit tudni érdemes') }),
-              F.media(tr('Logó'), st, 'logo_media_id', { accept: 'image/', onchange: ch, hint: tr('Átlátszó hátterű PNG vagy SVG ajánlott.') }),
-              F.seg(tr('Logó vízjel a sarokban'), b, 'logo_corner', [['none', tr('Nincs')], ['tl', tr('↖ Bal fent')], ['tr', tr('↗ Jobb fent')], ['bl', tr('↙ Bal lent')], ['br', tr('↘ Jobb lent')]], { def: 'none', full: true, onchange: ch }),
-              F.number(tr('Vízjel mérete (% a képernyő magasságából)'), b, 'logo_size', { min: 3, max: 30, placeholder: '9', onchange: ch }),
-              F.number(tr('Vízjel átlátszatlansága (%)'), b, 'logo_opacity', { min: 10, max: 100, placeholder: '90', onchange: ch }))),
-          h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('3. Fejléc sáv a képernyők tetején'))),
-            h('div', { class: 'card-body fields' },
-              F.toggle(tr('Fejléc megjelenítése'), hd, 'enabled', { full: true, onchange: ch, hint: tr('Logó, cím, alcím és óra a képernyő tetején, minden tartalom fölött.') }),
-              F.text(tr('Cím'), hd, 'title', { placeholder: tr('üresen: a szervezet neve'), onchange: ch }),
-              F.text(tr('Alcím'), hd, 'subtitle', { placeholder: tr('üresen: a szlogen'), onchange: ch }),
-              F.seg(tr('Stílus'), hd, 'style', [['surface', tr('Háttérszín')], ['accent', tr('Kiemelő szín')], ['gradient', tr('Átmenet#szín')]], { def: 'surface', onchange: ch }),
-              h('div', { class: 'row' }, F.toggle(tr('Logó'), hd, 'show_logo', { defaultOn: true, onchange: ch }), F.toggle(tr('Óra és dátum'), hd, 'show_clock', { defaultOn: true, onchange: ch })))),
-          h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('4. Finomhangolás: színek, betűk, forma'))), h('div', { class: 'card-body' }, custom)),
-          h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('5. Tartalmak színezése'))),
-            h('div', { class: 'card-body stack' },
-              h('p', { class: 'small muted', style: { margin: 0 } }, tr('Az új tartalmak alapból az arculat színeit használják. A korábban egyedi színekkel (háttér, szöveg, kártya- és gombszín) létrehozott tartalmakat itt egyszerre átszínezheted, így minden a kiválasztott témát követi – később témát váltva is. A képek, videók és háttérképek nem változnak.')),
-              h('div', {}, btn(tr('Összes tartalom arculat szerint'), async () => {
-                if (!(await confirmBox(tr('Minden tartalom egyedi színei az arculat színeire cserélődnek. Ez nem vonható vissza. Folytatod?'), { ok: tr('Átszínezés') }))) return;
-                try { const r = await POST('/api/slides/brandify', {}); invalidate('slides'); toast(tr('{n} / {total} tartalom átszínezve', { n: r.changed, total: r.total })); pv.reload(); } catch (e) { fail(e); }
-              }, { cls: 'primary', ic: 'palette' }))))),
+        h('div', { class: 'stack' }, brandTabs, ...Object.values(brandCards)),
         h('div', { class: 'preview-box stack' },
           h('div', { class: 'row between' }, h('b', {}, tr('Élő előnézet')),
             h('div', { class: 'row' },
@@ -1950,9 +2051,139 @@
   // =====================================================================
   //  Beállítások
   // =====================================================================
+  // Frissítések: ellenőrzés a GitHubon; systemd-s Linux telepítésen „Frissítés most”, máshol a frissítő parancs
+  // Min fut a szerver és milyen erőforrásokkal (Beállítások → Rendszer)
+  function systemTable(x, st) {
+    if (!x) return h('div', { class: 'stack' }, h('div', { class: 'kv' }, tr('Adatkönyvtár: '), h('span', { class: 'code-pill' }, st.data_dir)), h('div', { class: 'kv' }, tr('Futásidő: '), h('b', {}, fmtDur(st.uptime))));
+    const long = (s) => { const d = Math.floor(s / 86400), hr = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60); return d ? tr('{d} nap {h} óra', { d, h: hr }) : hr ? tr('{h} óra {m} perc', { h: hr, m }) : fmtDur(s); };
+    const PLATFORM = { docker: tr('Docker konténer'), 'raspberry-pi': 'Raspberry Pi', vm: tr('Virtuális gép'), mac: 'Mac', windows: 'Windows', 'bare-metal': tr('Saját gép (bare metal)') };
+    const INSTALL = { docker: 'Docker', linux: tr('Telepítő (systemd szolgáltatás)'), macos: tr('Telepítő (macOS háttérszolgáltatás)'), windows: tr('Telepítő (Windows ütemezett feladat)'), manual: tr('Kézi indítás') };
+    const rows = [
+      [tr('Futtatási környezet'), [PLATFORM[x.platform] || x.platform, x.model && x.platform === 'raspberry-pi' ? x.model : x.virt].filter(Boolean).join(' · ')],
+      [tr('Telepítés módja'), INSTALL[x.install] || x.install],
+      [tr('Operációs rendszer'), `${x.os} (${x.arch})`],
+      [tr('Gépnév'), x.hostname],
+      [tr('Processzor'), `${x.cpu || '—'} · ${tr('{n} mag', { n: x.cores })}${x.load != null ? ` · ${tr('terhelés {l}', { l: x.load.toFixed(2) })}` : ''}`],
+      // macOS-en a „szabad” memória a gyorsítótár miatt félrevezető, ott csak az összeset írjuk ki
+      [tr('Memória'), x.platform === 'mac' ? fmtBytes(x.mem.total) : tr('{free} szabad / {total}', { free: fmtBytes(x.mem.free), total: fmtBytes(x.mem.total) })],
+      x.temp != null ? [tr('Hőmérséklet'), `${x.temp} °C`] : null,
+      x.disk ? [tr('Tárhely (adatkönyvtár)'), tr('{free} szabad / {total}', { free: fmtBytes(x.disk.free), total: fmtBytes(x.disk.total) })] : null,
+      [tr('Adatkönyvtár'), h('span', { class: 'code-pill' }, x.data_dir)],
+      [tr('Adatbázis mérete'), fmtBytes(x.db_size)],
+      [tr('Szerver futásideje'), long(x.uptime)],
+      [tr('Gép futásideje'), long(x.sys_uptime)],
+    ].filter(Boolean);
+    return h('table', { class: 'table sys-table' }, rows.map(([k, v]) => h('tr', {}, h('td', { class: 'muted' }, k), h('td', {}, v))));
+  }
+
+  // Kiadási jegyzet (GitHub markdown egyszerű része: ### cím, - pont, **félkövér**, `kód`) – DOM elemekként, innerHTML nélkül
+  function releaseNotes(md) {
+    const inline = (t) => t.split(/(\*\*[^*]+\*\*|`[^`]+`)/).filter(Boolean).map((x) => x.startsWith('**') ? h('b', {}, x.slice(2, -2)) : x.startsWith('`') ? h('code', {}, x.slice(1, -1)) : x);
+    const out = []; let ul = null;
+    for (const line of String(md || '').split('\n')) {
+      const t = line.trim();
+      if (!t) { ul = null; continue; }
+      if (t.startsWith('#')) { ul = null; out.push(h('div', { class: 'rn-head' }, t.replace(/^#+\s*/, ''))); continue; }
+      if (/^[-*] /.test(t)) { if (!ul) out.push(ul = h('ul', {})); ul.append(h('li', {}, ...inline(t.slice(2)))); continue; }
+      ul = null; out.push(h('p', {}, ...inline(t)));
+    }
+    return h('div', { class: 'rn-body' }, out);
+  }
+
+  function updatesBox(current) {
+    const box = h('div', { class: 'stack' });
+    const out = h('div', { class: 'stack' });
+    const watch = async () => {
+      out.replaceChildren(h('div', { class: 'small' }, tr('Frissítés folyamatban… A szerver közben újraindul, ez 1–3 perc. Az oldal magától frissül.')));
+      for (let i = 0; i < 200; i++) {
+        await new Promise((ok) => setTimeout(ok, 3000));
+        const x = await GET('/api/updates/status').catch(() => null); // újraindulás közben nem válaszol
+        if (!x) continue;
+        if (x.version !== current) {
+          await POST('/api/screens/broadcast', { command: 'reload' }).catch(() => {});
+          toast(tr('Frissítve: v{v}', { v: x.version }));
+          setTimeout(() => location.reload(), 1200);
+          return;
+        }
+        if (x.result && !x.result.ok) {
+          out.replaceChildren(h('div', { class: 'small', style: { color: 'var(--danger)' } }, x.result.error), h('pre', { class: 'code-pill', style: { whiteSpace: 'pre-wrap', fontSize: '12px', padding: '10px', maxHeight: '220px', overflow: 'auto' } }, x.log));
+          return;
+        }
+      }
+    };
+    const check = async () => {
+      out.replaceChildren(h('div', { class: 'small muted' }, tr('Keresés…#frissítés')));
+      let u;
+      try { u = await GET('/api/updates?force=1'); } catch (e) { out.replaceChildren(h('div', { class: 'small', style: { color: 'var(--danger)' } }, e.message)); return; }
+      if (!u.update_available) return out.replaceChildren(h('div', { class: 'small' }, tr('✓ A legfrissebb verzió fut (v{v}).', { v: u.current })));
+      const cmd = h('div', { class: 'row', style: { flexWrap: 'nowrap' } }, h('code', { class: 'code-pill grow', style: { overflowX: 'auto', whiteSpace: 'nowrap', padding: '6px 10px' } }, u.command),
+        btn(tr('Másolás'), () => navigator.clipboard?.writeText(u.command).then(() => toast(tr('Parancs vágólapra másolva'))), { cls: 'sm', ic: 'copy' }));
+      const where = { docker: tr('A docker-compose.yml mappájában futtasd (docker run esetén: kép letöltése, majd a konténer újra létrehozása).'), macos: tr('Futtasd a Mac Termináljában.'), windows: tr('Futtasd rendszergazdaként a PowerShellben.'), manual: tr('A program mappájában futtasd, majd indítsd újra a szervert.'), linux: tr('Vagy futtasd a szerveren:') }[u.install_type];
+      out.replaceChildren(
+        h('div', {}, h('b', {}, tr('Új verzió érhető el: v{v}', { v: u.latest })), ' ', h('span', { class: 'small muted' }, tr('(most: v{v})', { v: u.current }))),
+        (u.notes || []).length ? h('div', { class: 'release-notes' }, u.notes.map((n) => h('div', {},
+          h('div', { class: 'row between' }, h('b', {}, `v${n.version}`), h('a', { class: 'small', href: n.url, target: '_blank', rel: 'noopener' }, fmtDate(n.published_at))),
+          releaseNotes(n.body)))) : null,
+        u.can_update ? h('div', {}, btn(tr('Frissítés most#szoftver'), async () => {
+          if (!(await confirmBox(tr('A szerver frissül a v{v} verzióra és újraindul, ez 1–3 perc. A kijelzők közben a tárolt tartalmat játsszák, utána újracsatlakoznak.', { v: u.latest }), { ok: tr('Frissítés#szoftver'), title: tr('Frissítés#szoftver') }))) return;
+          try { await POST('/api/updates/install'); watch(); } catch (e) { fail(e); }
+        }, { cls: 'primary', ic: 'download' })) : null,
+        h('div', { class: 'small muted' }, where), cmd);
+    };
+    box.replaceChildren(h('div', { class: 'row' }, h('div', { class: 'kv grow' }, tr('Verzió: '), h('b', {}, `v${current}`)), btn(tr('Frissítések keresése'), check, { ic: 'refresh' })), out);
+    return box;
+  }
+
+  // Hálózat (statikus IP) – csak ha a szerver Raspberry Pi-n fut, és a telepítő feltette a root segédet
+  function networkCard(net) {
+    const box = h('div', { class: 'card-body stack' });
+    const draw = (n) => {
+      const st = n.status || {};
+      const f = { mode: st.method === 'manual' ? 'static' : 'dhcp', address: st.address || '', gateway: st.gateway || '', dns: (st.dns || []).join(', ') };
+      const staticBox = h('div', { class: 'stack' },
+        F.text(tr('IP cím / előtag'), f, 'address', { placeholder: '192.168.1.50/24', hint: tr('A /24 a szokásos otthoni és irodai hálózatokhoz való (255.255.255.0).') }),
+        h('div', { class: 'fields' }, F.text(tr('Átjáró (router)'), f, 'gateway', { placeholder: '192.168.1.1' }), F.text(tr('DNS szerverek'), f, 'dns', { placeholder: '1.1.1.1, 8.8.8.8' })));
+      const sync = () => { staticBox.style.display = f.mode === 'static' ? '' : 'none'; };
+      const msg = h('div', { class: 'small' });
+      const apply = async () => {
+        const ip = f.address.split('/')[0];
+        const url = `${location.protocol}//${ip}:${n.port}/admin/`;
+        const text = f.mode === 'static'
+          ? tr('Az eszköz címe {ip} lesz, az admin felület ezután itt érhető el: {url}. Ha a cím rossz, az eszköz elérhetetlenné válhat – ilyenkor billentyűzettel és képernyővel: sudo signage-network dhcp', { ip, url })
+          : tr('Az eszköz a routertől kap címet, ami eltérhet a mostanitól. Az új címet a routerben vagy az eszköz bejelentkező képernyőjén találod.');
+        if (!(await confirmBox(text, { ok: tr('Alkalmazás'), title: tr('Hálózati beállítás') }))) return;
+        try {
+          const r = await POST('/api/network', f);
+          msg.replaceChildren(tr('Beállítás folyamatban…'), f.mode === 'static' ? h('div', {}, tr('Ha a cím megváltozott, nyisd meg: '), h('a', { href: url }, url)) : null);
+          // ha a cím nem változott, megvárjuk az eredményt
+          for (let i = 0; i < 20; i++) {
+            await new Promise((ok) => setTimeout(ok, 1500));
+            const x = await GET('/api/network').catch(() => null);
+            if (x?.result?.id === r.id) {
+              if (x.result.ok) { toast(tr('Hálózati beállítás alkalmazva')); draw(x); } else msg.textContent = `${tr('Nem sikerült')}: ${x.result.error}`;
+              return;
+            }
+          }
+        } catch (e) { fail(e); }
+      };
+      sync();
+      box.replaceChildren(
+        h('div', { class: 'kv' }, tr('Csatoló: '), h('b', {}, st.device ? `${st.device}${st.connection ? ` (${st.connection})` : ''}` : '—')),
+        h('div', { class: 'kv' }, tr('Jelenlegi cím: '), h('b', {}, st.address || '—'), ' · ', st.method === 'manual' ? tr('statikus') : 'DHCP'),
+        h('div', { class: 'kv' }, tr('Átjáró: '), h('b', {}, st.gateway || '—'), ' · DNS: ', h('b', {}, (st.dns || []).join(', ') || '—')),
+        F.select(tr('Címzés'), f, 'mode', [['dhcp', tr('Automatikus (DHCP)')], ['static', tr('Statikus IP cím')]], { onchange: sync }),
+        staticBox, msg,
+        h('div', { class: 'row' }, btn(tr('Alkalmazás'), apply, { cls: 'primary', ic: 'save' }),
+          btn(tr('Frissítés'), async () => { await POST('/api/network/refresh'); setTimeout(async () => draw(await GET('/api/network')), 1500); }, { ic: 'refresh' })));
+    };
+    draw(net);
+    return h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Hálózat (Raspberry Pi)'))), box);
+  }
+
   async function pageSettings(view) {
     const admin = isAdmin();
-    const [st, users, tokens] = await Promise.all([GET('/api/settings'), admin ? GET('/api/users') : [], admin ? GET('/api/tokens') : [], load('media')]);
+    const [st, users, tokens, net, sys] = await Promise.all([GET('/api/settings'), admin ? GET('/api/users') : [], admin ? GET('/api/tokens') : [], admin ? GET('/api/network').catch(() => null) : null, admin ? GET('/api/system').catch(() => null) : null, load('media')]);
+    const sysBox = systemTable(sys, st);
     const pw = { current: '', password: '', password2: '' };
     const nu = { username: '', password: '', role: 'editor' };
     const nt = { name: '', role: 'editor' };
@@ -1984,6 +2215,7 @@
             h('div', { class: 'row' }, ME.logo_url ? h('img', { src: ME.logo_url, style: { height: '44px', maxWidth: '140px', objectFit: 'contain' } }) : null, h('div', {}, h('b', {}, st.org_name), st.slogan ? h('div', { class: 'small muted' }, st.slogan) : null)),
             h('p', { class: 'small muted', style: { margin: 0 } }, tr('A szervezet neve, a logó, a színek, a betűtípusok és a képernyő fejléce az Arculat menüben állítható.')),
             h('div', {}, btn(tr('Arculat szerkesztése'), () => { location.hash = '#/branding'; }, { cls: 'primary', ic: 'palette' })))),
+        net?.supported ? networkCard(net) : null,
         h('div', { class: 'card' }, h('div', { class: 'card-head' }, h('h3', {}, tr('Jelszó módosítása'))),
           h('div', { class: 'card-body stack' },
             F.text(tr('Jelenlegi jelszó'), pw, 'current', { type: 'password' }),
@@ -1993,7 +2225,7 @@
               try { await POST('/api/account/password', pw); toast(tr('Jelszó módosítva')); } catch (e) { fail(e); }
             }, { cls: 'primary' })))),
         h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Felhasználók'))), usersBox,
-          h('div', { class: 'card-body row', style: { borderTop: '1px solid var(--border)', alignItems: 'flex-end' } },
+          h('div', { class: 'card-body row add-row', style: { borderTop: '1px solid var(--border)', alignItems: 'flex-end' } },
             h('div', { class: 'grow' }, F.text(tr('Felhasználónév'), nu, 'username')), h('div', { class: 'grow' }, F.text(tr('Jelszó'), nu, 'password', { type: 'password' })),
             h('div', {}, F.select(tr('Szerepkör'), nu, 'role', roleOpts)),
             btn(tr('Hozzáadás'), async () => { try { drawUsers(await POST('/api/users', nu)); toast(tr('Felhasználó létrehozva')); } catch (e) { fail(e); } }, { cls: 'primary', ic: 'plus' }))),
@@ -2001,7 +2233,7 @@
           h('div', { class: 'card-body stack' },
             h('p', { class: 'small muted', style: { margin: 0 } }, tr('Más rendszerek (pl. Home Assistant, Zapier, saját szkript) ezzel a kulccsal hívhatják az API-t – például vészjelzést küldhetnek. Fejléc: '), h('span', { class: 'code-pill' }, 'Authorization: Bearer ns_…')),
             tokensBox,
-            h('div', { class: 'row', style: { alignItems: 'flex-end' } },
+            h('div', { class: 'row add-row', style: { alignItems: 'flex-end' } },
               h('div', { class: 'grow' }, F.text(tr('Kulcs neve'), nt, 'name', { placeholder: tr('pl. Home Assistant') })),
               h('div', {}, F.select(tr('Szerepkör'), nt, 'role', roleOpts)),
               btn(tr('Kulcs létrehozása'), async () => {
@@ -2020,16 +2252,38 @@
             h('div', {}, btn(tr('Minta tartalmak létrehozása'), async () => {
               try { const r = await POST('/api/samples'); invalidate('playlists', 'slides', 'forms', 'calendars'); toast(tr('Minta tartalmak létrehozva')); location.hash = `#/playlists/${r.playlist_id}`; } catch (e) { fail(e); }
             }, { ic: 'plus' })))),
-        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Rendszer és mentés'))),
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Rendszer'))),
           h('div', { class: 'card-body stack' },
-            h('div', { class: 'kv' }, tr('Adatkönyvtár: '), h('span', { class: 'code-pill' }, st.data_dir)),
-            h('div', { class: 'kv' }, tr('Futásidő: '), h('b', {}, fmtDur(st.uptime))),
-            h('div', { class: 'kv' }, tr('Lejátszó címe: '), h('span', { class: 'code-pill' }, `${location.origin}/player/`)),
-            h('div', { class: 'row' }, h('a', { class: 'btn', href: '/api/backup' }, icon('download'), tr('Adatbázis mentése')),
-              btn(tr('Képernyők újratöltése'), async () => { const r = await POST('/api/screens/broadcast', { command: 'reload' }); toast(tr('{n} képernyő újratöltve', { n: r.count })); }, { ic: 'refresh' })),
+            sysBox,
+            h('div', { class: 'kv' }, tr('Lejátszó címe: '), h('span', { class: 'code-pill' }, `${serverOrigin()}/player/`)),
+            h('div', { class: 'row' }, btn(tr('Képernyők újratöltése'), async () => { const r = await POST('/api/screens/broadcast', { command: 'reload' }); toast(tr('{n} képernyő újratöltve', { n: r.count })); }, { ic: 'refresh' })))),
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Frissítések'))),
+          h('div', { class: 'card-body stack' }, updatesBox(st.version))),
+        h('div', { class: 'card', 'data-admin': 1 }, h('div', { class: 'card-head' }, h('h3', {}, tr('Mentés#biztonsági'))),
+          h('div', { class: 'card-body stack' },
+            h('p', { class: 'small muted', style: { margin: 0 } }, tr('Az adatbázis (tartalmak, listák, képernyők, beállítások) letölthető egy fájlba. A szerver telepítő naponta automatikus teljes mentést is készít.')),
+            h('div', {}, h('a', { class: 'btn primary', href: '/api/backup' }, icon('download'), tr('Adatbázis mentése'))),
             h('div', { class: 'small muted' }, tr('A teljes mentéshez (médiafájlokkal együtt) a szerveren futtasd: '), h('span', { class: 'code-pill' }, 'sudo signage-backup'))))),
     );
     if (!admin) view.querySelectorAll('[data-admin]').forEach((el) => el.remove());
+    // fülek (mint a Sablonoknál): a kártyák a címük alapján kerülnek csoportba; csak a nem üres fülek látszanak
+    const TAB_OF = { [tr('Felhasználók')]: 'users', [tr('API kulcsok')]: 'users', [tr('Rendszer')]: 'system', [tr('Frissítések')]: 'system', [tr('Mentés#biztonsági')]: 'system', [tr('Hálózat (Raspberry Pi)')]: 'system', [tr('Minta tartalmak')]: 'system' };
+    const grid = view.querySelector('.grid.c2');
+    const cards = [...grid.children];
+    cards.forEach((c) => { c.dataset.tab = TAB_OF[c.querySelector('.card-head h3')?.textContent] || 'general'; });
+    // a fülön belüli sorrend: a fő kártya elöl
+    const FIRST = [tr('Rendszer'), tr('Frissítések'), tr('Mentés#biztonsági'), tr('Felhasználók')];
+    const isFirst = (c) => FIRST.includes(c.querySelector('.card-head h3')?.textContent);
+    grid.append(...cards.filter(isFirst), ...cards.filter((c) => !isFirst(c)));
+    const tabs = [['general', tr('Általános')], ['users', tr('Felhasználók és API')], ['system', tr('Rendszer')]].filter(([k]) => cards.some((c) => c.dataset.tab === k));
+    if (!tabs.some(([k]) => k === settingsTab)) settingsTab = 'general';
+    const bar = h('div', { class: 'tabs-line one-row' });
+    const show = () => {
+      bar.replaceChildren(...tabs.map(([k, l]) => h('button', { type: 'button', class: settingsTab === k ? 'on' : '', onclick: () => { settingsTab = k; show(); } }, l)));
+      cards.forEach((c) => { c.style.display = c.dataset.tab === settingsTab ? '' : 'none'; });
+    };
+    if (tabs.length > 1) grid.before(bar);
+    show();
   }
 
   boot();

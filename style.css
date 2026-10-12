@@ -449,3 +449,5 @@ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
 /* Dokumentáció: támogatott platformok kis ikonokkal */
 .platform-table img.pf { width: 18px; height: 18px; vertical-align: -4px; margin-right: 8px; }
 .platform-table td:nth-child(2), .platform-table td:nth-child(3) { white-space: nowrap; }
+.theme-mode { display: flex; gap: 6px; margin-bottom: 8px; }
+.theme-mode .mini.on { border-color: var(--primary-strong); box-shadow: 0 0 0 2px var(--soft); }

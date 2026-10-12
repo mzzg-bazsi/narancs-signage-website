@@ -220,7 +220,32 @@
 
   function updateNav() {
     $('#nav').hidden = !state.stack.length;
+    updateEdgeNav();
   }
+
+  // Kézi lapozás érintőképernyőn: a bal szél érintése vissza, a jobb szélé előre.
+  // Gombos / kitöltős tartalmon (menü, űrlap, interaktív weboldal) a szélek helyett nyilak vannak, hogy ne lapozzon véletlenül.
+  const EDGE = 0.3; // a képernyő szélességének ennyi része számít szélnek
+  const edgeNavOn = () => !EMBED && !PREVIEW && settings().touch_nav !== false && state.items.length > 1 && !state.stack.length;
+  const needsArrows = (s) => s && (s.type === 'menu' || s.type === 'form' || (s.type === 'web' && s.data?.interactive));
+  function updateEdgeNav() { $('#edge-nav').hidden = !(edgeNavOn() && needsArrows(state.current?.slide)); }
+  function manualStep(step) {
+    state.interactUntil = Date.now() + idleMs(); // kézi lapozás után a megszokott tétlenségi idő múlva megy tovább magától
+    next(step);
+  }
+  $('#edge-nav').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (b) manualStep(+b.dataset.step);
+  });
+  document.addEventListener('click', (e) => {
+    const s = state.current?.slide;
+    if (!edgeNavOn() || !s || needsArrows(s) || !$('#keyboard').hidden) return;
+    if (e.target.closest?.('button, a, input, textarea, select, label, .link, #nav, #edge-nav, #alerts, #keyboard')) return;
+    // a tartalom szerinti bal/jobb (elforgatott kijelzőn a fizikai koordináták mást jelentenek)
+    const fx = e.clientX / innerWidth, fy = e.clientY / innerHeight;
+    const u = { 'rot-90': fy, 'rot-270': 1 - fy, 'rot-180': 1 - fx }[$('#rotor').className] ?? fx;
+    if (u < EDGE) manualStep(-1); else if (u > 1 - EDGE) manualStep(1);
+  });
 
   function show(slide, { duration, interactive } = {}) {
     if (!slide) return;
@@ -247,6 +272,7 @@
       setTimeout(() => oldEl.remove(), 950);
     }
     state.current = { slide, ctrl, el };
+    updateEdgeNav();
     ctrl.start?.();
     let secs = duration || slide.duration;
     if (ctrl.duration != null && !secs) secs = ctrl.duration;
@@ -1003,7 +1029,7 @@
     if (!T || !state.cfg) return;
     const org = state.cfg.org || {};
     const b = org.branding || {};
-    const r = T.resolve(b, settings().theme || '');
+    const r = T.resolve(b, settings().theme || '', { mode: settings().theme_mode, custom: org.custom_themes });
     const root = document.documentElement.style;
     for (const [k, v] of Object.entries(r.colors)) if (COLOR_VARS[k]) root.setProperty(COLOR_VARS[k], v);
     root.setProperty('--font', (T.FONTS[r.font] || T.FONTS.system).css);
@@ -1062,7 +1088,7 @@
     if (m.type === 'branding') {
       state.cfg.org = { ...state.cfg.org, ...m.org };
       state.cfg.media = { ...state.cfg.media, ...(m.media || {}) };
-      if (m.theme !== undefined) state.cfg.screen.settings = { ...state.cfg.screen.settings, theme: m.theme };
+      if (m.theme !== undefined) state.cfg.screen.settings = { ...state.cfg.screen.settings, theme: m.theme, theme_mode: m.theme_mode || '' };
       applyOverlays();
       if (state.current?.slide?.type === 'text') { state.index--; next(); } // a logó újrarajzolásához
     } else if (m.type === 'nav') { state.interactUntil = 0; next(m.step || 1); }
@@ -1173,7 +1199,7 @@
     try {
       const cfg = await api(url);
       setOnline(true);
-      if (!cfg.paired) { setLang(cfg.lang); showPairing(cfg.code); return; }
+      if (!cfg.paired) { setLang(cfg.lang); showPairing(cfg.code, cfg.lan); return; }
       applyConfig(cfg);
     } catch (e) {
       if (e.status === 404 && !PREVIEW) { await hello(); return; }
@@ -1187,7 +1213,7 @@
     $('#offline').hidden = on || PREVIEW;
   }
 
-  function showPairing(code) {
+  function showPairing(code, lan) {
     state.cfg = null;
     clearTimeout(state.timer);
     $('#stage').replaceChildren();
@@ -1195,7 +1221,8 @@
     hideBoot();
     $('#pairing').hidden = false;
     $('#pair-code').textContent = code;
-    $('#pair-url').textContent = `${location.origin}/admin/`;
+    const origin = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && lan?.length ? `${location.protocol}//${lan[0]}${location.port ? `:${location.port}` : ''}` : location.origin;
+    $('#pair-url').textContent = `${origin}/admin/`;
     $('#pair-info').textContent = `${tr('Eszköz')}: ${DEVICE.slice(0, 8)} · ${screen.width}×${screen.height}`;
   }
 
@@ -1208,7 +1235,7 @@
       setOnline(true);
       setLang(r.lang);
       showStatus(null);
-      if (!r.paired) showPairing(r.code);
+      if (!r.paired) showPairing(r.code, r.lan);
       return r;
     } catch (e) {
       setOnline(false);
